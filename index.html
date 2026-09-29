@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>씽씽씽 오페라랜드 · 사운드 큐 콘솔</title>
+<style>
+  :root{
+    --ink:#161A26; --panel:#1F2534; --panel-2:#272E40; --line:#39415A;
+    --cream:#F0E9DA; --dim:#8D93A6; --lamp:#E9B14C;
+    --bed:#6FA8C7; --sting:#E4805F; --live:#8FBF7F; --voice:#B294CB; --live-red:#D9534F;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink); color:var(--cream);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:14px; line-height:1.5; padding-bottom:110px; -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,"D2Coding",monospace; font-variant-numeric:tabular-nums}
+
+  header{border-bottom:1px solid var(--line); padding:22px 24px 18px;
+    display:flex; flex-wrap:wrap; gap:20px; align-items:flex-end;
+    background:linear-gradient(180deg,#1A1F2D 0%,var(--ink) 100%)}
+  h1{margin:0; font-size:19px; font-weight:700; letter-spacing:-.01em}
+  .sub{color:var(--dim); font-size:12px; margin-top:3px}
+  .tools{margin-left:auto; display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+  button{font:inherit; font-size:13px; color:var(--cream); background:var(--panel-2);
+    border:1px solid var(--line); border-radius:3px; padding:8px 14px; cursor:pointer}
+  button:hover{background:#303852}
+  button:disabled{opacity:.4; cursor:default}
+  button:focus-visible{outline:2px solid var(--lamp); outline-offset:2px}
+  .primary{background:var(--lamp); color:#1A1405; border-color:var(--lamp); font-weight:700}
+  .primary:hover{background:#F2BE60}
+  .count{font-size:12px; color:var(--dim)} .count b{color:var(--lamp)}
+  .badge{font-size:11px; font-weight:700; color:#1A1405; background:var(--lamp); border-radius:2px; padding:3px 9px}
+  .badge.net{background:var(--bed)}
+  .badge.saved{background:var(--live)}
+
+  .wrap{padding:0 24px}
+  .act{margin:26px 0 8px; padding-bottom:6px; border-bottom:1px solid var(--line);
+    font-size:12px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
+  .cue{display:grid; grid-template-columns:56px 1fr 180px 210px 168px; gap:16px;
+    align-items:flex-start; padding:16px 12px 16px 11px;
+    border-bottom:1px solid #232A3B; border-left:3px solid transparent}
+  .cue.standing{border-left-color:var(--lamp); background:#1C2233}
+  .cue.playing{background:#202A3A}
+  .cue:hover{background:#1E2433}
+  .qid{font-size:17px; font-weight:700; letter-spacing:.02em; padding-top:2px}
+  .cue.playing .qid{color:var(--lamp)}
+
+  .cueline{font-size:18px; font-weight:700; line-height:1.35; letter-spacing:-.01em; word-break:keep-all}
+  .cueline.quote{border-left:2px solid var(--lamp); padding-left:12px; color:#FAEBC8}
+  .what{font-size:14px; color:#C3C9D8; margin-top:7px; font-weight:500}
+  .note{font-size:12.5px; color:var(--dim); margin-top:4px}
+  .err{color:#F0A8A4; font-size:12px; margin-top:6px; font-weight:600}
+  .kind{display:inline-block; font-size:11px; padding:2px 8px; border-radius:2px;
+    margin-right:8px; vertical-align:1px; color:#141822; font-weight:700}
+  .k-bed{background:var(--bed)} .k-sting{background:var(--sting)}
+  .k-live{background:var(--live)} .k-track{background:#D9A6C7} .k-voice{background:var(--voice)} .k-none{background:#5A6274; color:var(--cream)}
+
+  .meta{font-size:12px; color:var(--dim)}
+  .meta .on{color:var(--lamp); font-weight:700}
+  .bar-mini{height:3px; background:#2C3448; border-radius:2px; margin-top:8px; overflow:hidden}
+  .bar-mini i{display:block; height:100%; width:0; background:var(--lamp)}
+
+  .seek{display:flex; align-items:center; gap:7px; margin-top:8px}
+  .seek input{flex:1; accent-color:var(--lamp); height:18px; min-width:0}
+  .tpos{font-size:11px; color:var(--cream); white-space:nowrap}
+  .seekbtns{display:flex; gap:5px; margin-top:5px}
+  .seekbtns button{padding:4px 7px; font-size:11px; flex:1}
+  .startat{margin-top:5px; font-size:11.5px; color:var(--lamp); font-weight:700}
+  .layers{display:flex; flex-direction:column; gap:6px}
+  .layer{background:#20273A; border:1px solid #3A4360; border-radius:3px; padding:7px 8px}
+  .layer .nm{font-size:11.5px; display:flex; gap:6px; align-items:center; word-break:break-all}
+  .layer .nm b{font-weight:700; color:var(--lamp); font-size:10.5px}
+  .layer .nm .x{margin-left:auto; cursor:pointer; color:var(--dim); padding:0 4px; flex:none}
+  .layer .nm .x:hover{color:#F0A8A4}
+  .layer .mix{display:flex; align-items:center; gap:7px; margin-top:5px}
+  .layer .mix input{flex:1; accent-color:var(--bed); height:16px}
+  .layer .mix span{font-size:10.5px; color:var(--dim); width:28px; text-align:right}
+  .trimtoggle{margin-top:6px; font-size:10.5px; color:var(--dim); cursor:pointer;
+    border-top:1px solid #333B52; padding-top:5px}
+  .trimtoggle:hover{color:var(--lamp)}
+  .trimtoggle.cut{color:var(--lamp); font-weight:700}
+  .trim{margin-top:4px}
+  .trim .tl{font-size:10.5px; color:var(--dim); width:22px; flex:none}
+  .trim input{accent-color:var(--sting)}
+  .trimbtns{display:flex; gap:5px; margin-top:5px}
+  .trimbtns button{padding:4px 7px; font-size:10.5px; flex:1}
+  .speed{display:flex; align-items:center; gap:6px; margin-top:7px; font-size:11.5px; color:var(--dim)}
+  .speed select{font:inherit; font-size:11.5px; color:var(--cream); background:var(--panel-2);
+    border:1px solid var(--line); border-radius:3px; padding:3px 5px}
+  .addfile{border:1px dashed var(--line); border-radius:3px; padding:8px; font-size:11.5px;
+    color:var(--dim); text-align:center; cursor:pointer}
+  .addfile:hover, .addfile.drop{border-color:var(--lamp); color:var(--lamp)}
+  .na{color:#5A6274; font-size:11.5px; text-align:center; padding:8px}
+
+  .row-actions{display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap}
+  .row-actions button{padding:6px 10px; font-size:12px}
+  .loopbtn{min-width:56px; letter-spacing:.04em}
+  .loopbtn.on{background:var(--lamp); color:#1A1405; border-color:var(--lamp); font-weight:700}
+
+  .link{color:var(--dim); font-size:11.5px; text-decoration:none; border-bottom:1px solid #333B52}
+  .link:hover{color:var(--lamp); border-color:var(--lamp)}
+  .links{margin-top:6px; display:flex; gap:12px}
+
+  .bar{position:fixed; left:0; right:0; bottom:0; z-index:10; background:#11151F;
+    border-top:1px solid var(--line); padding:12px 24px; display:flex; gap:18px; align-items:center}
+  .standing{flex:1; min-width:0}
+  .standing .lbl{font-size:11px; letter-spacing:.14em; color:var(--dim); text-transform:uppercase}
+  .standing .name{font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .master{font-size:11.5px; color:var(--dim); display:flex; align-items:center; gap:8px; white-space:nowrap}
+  .master input{width:110px; accent-color:var(--lamp)}
+  .go{background:var(--lamp); color:#1A1405; border:none; border-radius:3px; font-size:17px;
+    font-weight:800; letter-spacing:.16em; padding:14px 40px; cursor:pointer}
+  .go:hover{background:#F2BE60}
+  .stop{border-color:var(--live-red); color:#F0B4B2}
+  .stop:hover{background:#3A2224}
+  .now{font-size:11.5px; color:var(--dim); max-width:240px}
+  .now b{color:var(--lamp)}
+
+  .hint{padding:14px 24px 0; color:var(--dim); font-size:12.5px}
+  .hint b{color:var(--cream)}
+  kbd{font-family:inherit; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:3px; padding:1px 6px; font-size:11.5px; color:var(--cream)}
+
+  @media (max-width:760px){
+    body{padding-bottom:150px}
+    .bar{flex-wrap:wrap; gap:10px; padding:10px 16px 14px}
+    .standing{flex:1 1 100%; order:1}
+    .master{order:2; flex:1 1 auto}
+    .now{order:3; flex:1 1 auto; max-width:none; text-align:right}
+    .go{order:4; flex:1 1 55%; padding:14px 0}
+    .stop{order:5; flex:1 1 38%}
+    .wrap{padding:0 16px} header{padding:16px} .tools{margin-left:0; width:100%}
+  }
+  @media (max-width:900px){
+    .cue{grid-template-columns:44px 1fr; gap:10px}
+    .cue > .meta, .cue > .slotcol, .cue > .row-actions{grid-column:2}
+    .row-actions{justify-content:flex-start}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .cue.playing .qid::after{content:"●"; font-size:9px; margin-left:6px; vertical-align:2px;
+      animation:pulse 1.4s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>씽씽씽 오페라랜드 · 사운드 큐 콘솔</h1>
+    <div class="sub">원안·극작·작사·총연출 김지혜 &nbsp;·&nbsp; 편집 김하정 &nbsp;·&nbsp; 저작권 등록 제 C2026-021776호</div>
+  </div>
+  <div class="tools">
+    <span class="count" id="count"></span>
+    <span class="badge" id="badge" hidden></span>
+    <button id="pickFiles" class="primary">음원 파일 넣기</button>
+    <button id="pickFolder">폴더로 넣기 (PC)</button>
+    <button id="exportMix">설정 내보내기</button>
+    <button id="importMix">설정 불러오기</button>
+    <button id="pack">공유 파일 만들기</button>
+    <span class="badge saved" id="saved" hidden>저장됨</span>
+    <button id="clearAll">전체 비우기</button>
+  </div>
+</header>
+
+<div class="hint" id="hint"></div>
+<div class="wrap" id="list"></div>
+
+<div class="bar">
+  <div class="standing">
+    <div class="lbl">대기 중인 큐</div>
+    <div class="name" id="standingName">—</div>
+  </div>
+  <label class="master">전체 음량 <input type="range" id="master" min="0" max="100" value="100"><span id="masterVal" class="mono">100</span></label>
+  <div class="now" id="nowPlaying">재생 중 없음</div>
+  <button class="go" id="goBtn">GO</button>
+  <button class="stop" id="stopBtn">전체 정지</button>
+</div>
+
+<script>
+/* ── 큐 데이터 ───────────────────────────────────────────── */
+const CUES = [
+ {"q": "Q0", "act": "프롤로그", "trig": "객석 정리 · 안내방송 시작", "what": "주제곡 (안내방송 배경)", "kind": "베드", "len": "~3분", "loop": true, "fi": 2, "fo": 5, "vol": "MP", "src": "Q00_주제곡_객석입장.mp3 (Q1과 공용)", "term": "", "note": "안내방송이 끝나면 방송과 함께 페이드아웃 → 암전", "also": ["Q1"]},
+ {"q": "Q1", "act": "프롤로그", "trig": "조명 큐와 동시", "what": "주제곡 다시 재생 (처음부터, 작게)", "kind": "베드", "len": "~2분", "loop": true, "fi": 0, "fo": 3, "vol": "MP", "src": "Q0 동일 음원", "term": "", "note": "반드시 처음부터 · 조명 큐와 정확히 동시"},
+ {"q": "Q2", "act": "프롤로그", "trig": "알레그로 대사 시작", "what": "Q1 볼륨 30% 다운", "kind": "덕킹", "len": "—", "loop": false, "fi": 2, "fo": 0, "vol": "MP", "src": "Q1 제어", "term": "", "note": "끊지 않고 볼륨만 30% 내림", "target": "Q1", "duckMul": 0.7},
+ {"q": "Q3", "act": "프롤로그", "trig": "“한 가지 고민이 있었지.”", "what": "Q1 즉시 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q1 제어", "term": "", "note": "페이드 없이 정박에 딱 정지", "target": "Q1"},
+ {"q": "Q4", "act": "프롤로그", "trig": "“알레그로가 먼저 불러볼게!”", "what": "hook 반주 1회 (알레그로 시범)", "kind": "라이브", "len": "~30초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "모티프 율동과 함께"},
+ {"q": "Q4A", "act": "프롤로그", "trig": "“친구들이 불러볼까? 준비, 시작!”", "what": "hook 반주 2회 (관객만 부르기)", "kind": "라이브", "len": "~30초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "‘친구들’ = 관객 · 모티프 율동과 함께"},
+ {"q": "Q4B", "act": "프롤로그", "trig": "“모두 함께 따라 불러볼까? 준비, 시작!”", "what": "hook 반주 3회 (전원 + 관객 합창)", "kind": "라이브", "len": "~40초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "관객 콜앤리스폰스 · 길이 가변"},
+ {"q": "Q6", "act": "1막 · 음악이 사라진 마을", "trig": "스크린 회색 마을", "what": "주제곡 마이너·느리게 + 차가운 앰비언스", "kind": "베드", "len": "5분+", "loop": true, "fi": 3, "fo": 3, "vol": "PP", "src": "편곡자 + Pixabay", "term": "cold empty ambience drone", "note": "제이 독백 전체를 덮어야 함"},
+ {"q": "Q7", "act": "1막 · 음악이 사라진 마을", "trig": "“난 이제 노래 같은 거 안 할래.”", "what": "신디 지속음 3번 → 선율 (라이브)", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MP", "src": "신디 라이브", "term": "", "note": "음원 없음 · 라이브 연주로 대체"},
+ {"q": "Q8", "act": "1막 · 음악이 사라진 마을", "trig": "알레그로 튀어나옴", "what": "타악기 잔망스럽게 (라이브)", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "F", "src": "타악 라이브", "term": "", "note": "음원 없음 · 등장 동작에 맞춰 라이브"},
+ {"q": "Q9", "act": "1막 · 음악이 사라진 마을", "trig": "“오페라…랜드요?”", "what": "Voi che sapete 전주", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q09_VoiCheSapete_MR.mp3", "term": "", "note": "삽입곡 01 · MR · 전주는 알레그로 대사 밑으로 진행"},
+ {"q": "Q10", "act": "1막 · 음악이 사라진 마을", "trig": "“음악에는 멜로디만 있는 게 아니거든.” 직후", "what": "북소리·발 구르는 리듬", "kind": "베드", "len": "8s", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Pixabay", "term": "marching drum stomp rhythm", "note": "템포 등장 · 점점 크게"},
+ {"q": "Q11", "act": "1막 · 음악이 사라진 마을", "trig": "“저도 해볼래요!”", "what": "Non più andrai", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브", "term": "", "note": "삽입곡 02"},
+ {"q": "Q13", "act": "1막 · 음악이 사라진 마을", "trig": "암전 · 템포 퇴장", "what": "물 흐르는 소리", "kind": "베드", "len": "8분+", "loop": true, "fi": 4, "fo": 4, "vol": "MP", "src": "Q13_물흐르는소리_8분루프.mp3", "term": "", "note": "2막 대사 전체 밑에 깔림 · 하프 아르페지오 삭제 · 가장 긴 큐"},
+ {"q": "Q15A", "act": "2막 · 오페라랜드의 여행", "trig": "안단테, 노래 준비 자세", "what": "Q13 강물소리 낮추기", "kind": "덕킹", "len": "—", "loop": false, "fi": 4, "fo": 0, "vol": "PP", "src": "Q13 제어", "term": "", "note": "물소리는 끊지 않고 볼륨만 35%로 내림 · 4초", "target": "Q13", "duckMul": 0.35},
+ {"q": "Q16", "act": "2막 · 오페라랜드의 여행", "trig": "“바람을 따라 흘러가도록 두는 거야.”", "what": "Habanera", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q16_Habanera_MR.mp3", "term": "", "note": "삽입곡 03 · MR · 강물소리 밑에 깔린 채 진행"},
+ {"q": "Q16B", "act": "2막 · 오페라랜드의 여행", "trig": "템포 객석에서 등장", "what": "강물소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 2, "vol": "—", "src": "Q13 제어", "term": "", "note": "2초 페이드로 강물소리 정리", "targets": ["Q13"], "cutFade": 2},
+ {"q": "Q17", "act": "2막 · 오페라랜드의 여행", "trig": "템포 등장 직후", "what": "탬버린·캐스터네츠 리듬", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Pixabay", "term": "tambourine castanet rhythm", "note": "강물소리가 멈춘 뒤 들어감"},
+ {"q": "Q18", "act": "2막 · 오페라랜드의 여행", "trig": "“심장이 뛰어야 진짜 노래지!”", "what": "두근×3 심장소리 (보통 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q18_심장소리_두근x3.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
+ {"q": "Q19", "act": "2막 · 오페라랜드의 여행", "trig": "“손가락이 튕겨지고 싶지 않았냐고!”", "what": "두근×6 심장소리 (Q18의 2배 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q19_빠른심장소리_두근x6.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
+ {"q": "Q20", "act": "2막 · 오페라랜드의 여행", "trig": "“쿵 짝짝 쿵 짝짝”", "what": "왈츠 리듬 타악기 (박수 유도)", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 0, "vol": "MF", "src": "Pixabay", "term": "waltz percussion clap rhythm", "note": "연출메모: 타악기 같이"},
+ {"q": "Q21", "act": "2막 · 오페라랜드의 여행", "trig": "“자 들어봐 안단테”", "what": "La donna è mobile", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q21_LaDonnaEMobile_MR_앞3초컷.mp3", "term": "", "note": "삽입곡 04 · MR · 앞 3초 잘라 바로 나옴"},
+ {"q": "Q22", "act": "2막 · 오페라랜드의 여행", "trig": "전 조명 소등 · 푸른빛 1등", "what": "저음 파이프오르간·베이스 드론", "kind": "베드", "len": "6분+", "loop": true, "fi": 3, "fo": 4, "vol": "MP", "src": "Pixabay", "term": "pipe organ low drone ominous", "note": "카덴차 등장~퇴장 전체"},
+ {"q": "Q23", "act": "2막 · 오페라랜드의 여행", "trig": "카덴차 첫 대사 직전", "what": "천둥번개", "kind": "스팅어", "len": "5s", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Pixabay", "term": "thunder crack rumble", "note": "스크린 번개와 싱크"},
+ {"q": "Q24", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “쉿! 조용히 해!”", "what": "천둥번개 2회", "kind": "스팅어", "len": "7s", "loop": false, "fi": 0, "fo": 1, "vol": "MF", "src": "Q24_천둥번개_2회.mp3", "term": "thunder crack rumble", "note": "1회차 뒤 3.3초에 2회차"},
+ {"q": "Q25", "act": "2막 · 오페라랜드의 여행", "trig": "“이것이 바로 음악이 가진 진정한 무게다!”", "what": "Nessun dorma", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q25_NessunDorma_MR_앞2초컷.mp3", "term": "", "note": "삽입곡 05 · MR · 앞 2초 잘라 바로 나옴"},
+ {"q": "Q26", "act": "2막 · 오페라랜드의 여행", "trig": "템포·안단테·알레그로 퇴장", "what": "암전 전환음", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 2, "vol": "MP", "src": "Pixabay", "term": "dark transition swell", "note": "Q22 페이드아웃과 겹침"},
+ {"q": "Q27", "act": "3막 · 내 안의 노래를 찾아서", "trig": "제이 무대 중앙 · 따뜻한 핀조명", "what": "스트링 스웰 (따뜻하게)", "kind": "베드", "len": "4분", "loop": true, "fi": 4, "fo": 3, "vol": "PP", "src": "Pixabay", "term": "warm strings ambient pad", "note": "조명 전환과 동시"},
+ {"q": "Q27A", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“지금도 계속 뛰고 있어요” 직후", "what": "두근×2 심장소리 (약간 느리게)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q27A_심장소리_두근x2_느리게.mp3", "term": "", "note": "원샷 · 지체 없이 · Q27 스트링이 깔려 있으면 Q27을 살짝 낮출 것"},
+ {"q": "Q28", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“그 빛을 믿고 노래해 보려고 해요.”", "what": "O mio babbino caro", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q28_OMioBabbinoCaro_MR.mp3", "term": "", "note": "삽입곡 06 · MR"},
+ {"q": "Q29", "act": "3막 · 내 안의 노래를 찾아서", "trig": "배경 스크린 — 불꽃이 별이 됨", "what": "반짝임 스파클 (긴 버전)", "kind": "베드", "len": "2분", "loop": true, "fi": 2, "fo": 2, "vol": "PP", "src": "Q29_반짝임_긴버전_2분루프.mp3", "term": "", "note": "영상 싱크 · 노래 밑 아주 작게"},
+ {"q": "Q30", "act": "3막 · 내 안의 노래를 찾아서", "trig": "세 요정 축제 의상 등장", "what": "환호 + 축제 타악", "kind": "스팅어", "len": "4s", "loop": false, "fi": 0, "fo": 2, "vol": "F", "src": "Pixabay", "term": "crowd cheer festive celebration", "note": "연출메모: 환호하며"},
+ {"q": "Q31", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“우리 마음속의 노래를 위해서!”", "what": "Brindisi", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "라이브", "term": "", "note": "삽입곡 07 · 라이브로 대체 (음원 없음)"},
+ {"q": "Q33", "act": "피날레 · 내 마음의 노래", "trig": "제이·알레그로 외 퇴장", "what": "카덴차 목소리 (멀리서, 리버브)", "kind": "보이스", "len": "8s", "loop": false, "fi": 2, "fo": 3, "vol": "MF", "src": "사전 녹음", "term": "", "note": "김하정 녹음 + 리버브 롱테일 · 무대 뒤 스피커"},
+ {"q": "Q34", "act": "피날레 · 내 마음의 노래", "trig": "제이 무반주 후렴", "what": "무음 — 모든 큐 정지", "kind": "정지", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "—", "term": "", "note": "완전 무음 확보 — 가장 중요한 큐"},
+ {"q": "Q35", "act": "피날레 · 내 마음의 노래", "trig": "관객 대답 후", "what": "Sing Sing Sing 주제곡", "kind": "음원", "len": "2:07", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q35_SingSingSing_주제곡.mp3", "term": "", "note": "삽입곡 08 · 전 출연진 + 관객"},
+ {"q": "Q36", "act": "커튼콜", "trig": "커튼콜 시작 · 배우 인사 등장", "what": "터키 행진곡 (반복)", "kind": "음원", "len": "1:34 반복", "loop": true, "fi": 0, "fo": 3, "vol": "F", "src": "Q36_터키행진곡_커튼콜_반복용.mp3", "term": "", "note": "인사가 끝나면 이 줄의 정지(3초 페이드) → Q37"},
+ {"q": "Q37", "act": "커튼콜", "trig": "인사 후 (Q36 페이드아웃 직후)", "what": "Sing Sing Sing 주제곡", "kind": "음원", "len": "2:07", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q37_SingSingSing_주제곡_인사후.mp3", "term": "", "note": "Q36이 아직 재생 중이면 GO 시 3초 페이드로 자동 정리", "stopFirst": ["Q36"]},
+];
+
+// 음원은 큐시트 음량 단계(PP·MP·MF·F)에 맞춰 미리 레벨을 맞춰 두었으므로 콘솔에서는 추가로 줄이지 않는다
+const VOL = {PP:1, MP:1, MF:1, F:1, "—":1};
+let MASTER = 1;
+const level = v => Math.max(0, Math.min(1, (VOL[v] ?? 0.7) * MASTER));
+const REQ_FILE  = c => ["베드","스팅어","보이스","음원"].includes(c.kind);
+const CAN_FILE  = c => ["베드","스팅어","보이스","라이브","음원"].includes(c.kind);
+const EXTS = ['mp3','m4a','wav','ogg','aac','flac'];
+const BIG = 60 * 1024 * 1024;
+
+/* layers: [{name, url, file, audio, gain, err, triedData}] */
+const state = CUES.map(c => ({cue:c, layers:[], playing:false, loopOn:!!c.loop, rate:1, startAt:0, seeking:false}));
+let standing = 0;
+
+/* ── 레이어 관리 ───────────────────────────────────────── */
+function fmt(s){
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60), x = Math.floor(s % 60);
+  return m + ':' + String(x).padStart(2, '0');
+}
+
+const AUDIO_MIME = n => {
+  const e = (n.split('.').pop() || '').toLowerCase();
+  return {mp3:'audio/mpeg', m4a:'audio/mp4', mp4:'audio/mp4', aac:'audio/aac',
+          wav:'audio/wav', ogg:'audio/ogg', flac:'audio/flac'}[e] || 'audio/mpeg';
+};
+const DATA_LIMIT = 18 * 1024 * 1024;   // 이보다 크면 data URL이 실패하므로 blob 우선
+
+function srcFromFile(file){
+  return new Promise(res => {
+    const mime = AUDIO_MIME(file.name);
+    const blob = (file.type && file.type.startsWith('audio')) ? file : new Blob([file], {type:mime});
+    // blob URL을 우선 사용 — data URL은 일부 브라우저에서 중간 위치로 이동(탐색)이 되지 않는다
+    if (true || file.size > DATA_LIMIT){ res({kind:'blob', url:URL.createObjectURL(blob)}); return; }
+    const r = new FileReader();
+    r.onload = () => res({kind:'data', url:r.result});
+    r.onerror = () => res({kind:'blob', url:URL.createObjectURL(blob)});
+    r.readAsDataURL(blob);
+  });
+}
+
+function makeLayer(i, url, name, file, kind){
+  const L = {name, url, file:file||null, gain:1, err:null,
+             tried:{[kind || 'url']:true}, inPt:0, outPt:null, dur:0, trim:false};
+  const a = new Audio();
+  a.playsInline = true; a.preload = 'auto'; a.loop = false;
+  a.onloadedmetadata = () => { L.dur = a.duration || 0; L.err = null; render(); };
+  a.ontimeupdate = () => {
+    const s = state[i];
+    const end = (L.outPt != null) ? L.outPt : (L.dur || Infinity);
+    if (a.currentTime >= end - 0.02){
+      if (s.loopOn){ try{ a.currentTime = L.inPt; }catch(e){} }
+      else { a.pause(); s.playing = s.layers.some(x => x.audio && !x.audio.paused); render(); }
+    }
+  };
+  a.onended = () => {
+    const s = state[i];
+    if (s.loopOn){ try{ a.currentTime = L.inPt; a.play(); }catch(e){} }
+    else { s.playing = s.layers.some(x => x.audio && !x.audio.paused); render(); }
+  };
+  a.onerror = () => retry(L, a);
+  a.src = url; a.load();
+  L.audio = a;
+  return L;
+}
+
+// data URL ↔ blob 을 번갈아 시도한다
+function retry(L, a){
+  if (!L.file){
+    L.err = '링크에서 이 음원을 찾지 못했습니다 (' + L.name + ')';
+    L.dead = true; render(); return;
+  }
+  const mime = AUDIO_MIME(L.name);
+  const blob = (L.file.type && L.file.type.startsWith('audio')) ? L.file : new Blob([L.file], {type:mime});
+  if (!L.tried.blob){
+    L.tried.blob = true; L.err = '다시 불러오는 중…'; render();
+    a.src = URL.createObjectURL(blob); a.load(); return;
+  }
+  if (!L.tried.data && L.file.size <= DATA_LIMIT){
+    L.tried.data = true; L.err = '다시 불러오는 중…'; render();
+    const r = new FileReader();
+    r.onload = () => { a.src = r.result; a.load(); };
+    r.onerror = () => { L.err = '파일을 읽지 못했습니다'; render(); };
+    r.readAsDataURL(blob); return;
+  }
+  const code = a.error ? a.error.code : 0;
+  L.err = code === 4 ? '브라우저가 열지 못하는 형식입니다 (mp3 권장)' : '재생할 수 없는 음원입니다';
+  render();
+}
+
+function fmt(s){
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60), x = Math.floor(s % 60);
+  return m + ':' + String(x).padStart(2, '0');
+}
+
+function addFile(i, file){
+  const s = state[i];
+  const holder = {name:file.name, err:'불러오는 중…', gain:1, audio:null, file, tried:{}, inPt:0, outPt:null, dur:0};
+  s.layers.push(holder); render();
+  srcFromFile(file).then(r => {
+    const k = s.layers.indexOf(holder);
+    const L = makeLayer(i, r.url, file.name, file, r.kind);
+    if (k >= 0) s.layers[k] = L; else s.layers.push(L);
+    render(); persist();
+  });
+}
+
+function addURL(i, url, name){ state[i].layers.push(makeLayer(i, url, name, null, 'url')); }
+
+function removeLayer(i, k){
+  const s = state[i], L = s.layers[k];
+  if (L){
+    if (L.audio){ try{ L.audio.pause(); }catch(e){} }
+    if (L.file && L.url && L.url.startsWith('blob:')) URL.revokeObjectURL(L.url);
+  }
+  s.layers.splice(k, 1);
+  if (!s.layers.length) s.playing = false;
+  render(); persist();
+}
+
+/* ── 렌더 ─────────────────────────────────────────────── */
+const list = document.getElementById('list');
+const kindClass = k => ({"베드":"k-bed","스팅어":"k-sting","라이브":"k-live","보이스":"k-voice","음원":"k-track"}[k] || "k-none");
+
+function render(){
+  list.innerHTML = '';
+  let lastAct = null;
+  state.forEach((s, i) => {
+    const c = s.cue;
+    if (c.act !== lastAct){
+      const h = document.createElement('div');
+      h.className = 'act'; h.textContent = c.act;
+      list.appendChild(h); lastAct = c.act;
+    }
+    const row = document.createElement('div');
+    row.className = 'cue' + (i === standing ? ' standing' : '') + (s.playing ? ' playing' : '');
+    row.id = 'row-' + c.q;
+
+    const id = document.createElement('div');
+    id.className = 'qid mono'; id.textContent = c.q;
+
+    const main = document.createElement('div');
+    const line = document.createElement('div');
+    line.className = 'cueline' + (c.trig.startsWith('\u201c') ? ' quote' : '');
+    line.textContent = c.trig;
+    const k = document.createElement('span');
+    k.className = 'kind ' + kindClass(c.kind); k.textContent = c.kind;
+    const w = document.createElement('div'); w.className = 'what';
+    w.append(k, document.createTextNode(c.what));
+    const nt = document.createElement('div'); nt.className = 'note'; nt.textContent = c.note;
+    main.append(line, w, nt);
+    s.layers.forEach(L => {
+      if (L.err && L.err !== '불러오는 중…'){
+        const er = document.createElement('div'); er.className = 'err';
+        er.textContent = '⚠ ' + L.name + ' — ' + L.err;
+        main.appendChild(er);
+      }
+    });
+    if (c.term){
+      const links = document.createElement('div'); links.className = 'links';
+      const a1 = document.createElement('a');
+      a1.className = 'link'; a1.target = '_blank'; a1.rel = 'noopener';
+      a1.href = 'https://pixabay.com/sound-effects/search/' + encodeURIComponent(c.term) + '/';
+      a1.textContent = 'Pixabay에서 찾기';
+      const a2 = document.createElement('a');
+      a2.className = 'link'; a2.target = '_blank'; a2.rel = 'noopener';
+      a2.href = 'https://freesound.org/search/?q=' + encodeURIComponent(c.term) + '&f=license%3A%22Creative+Commons+0%22';
+      a2.textContent = 'Freesound CC0';
+      links.append(a1, a2); main.appendChild(links);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = c.len + (s.loopOn ? ' · <span class="on">반복 재생</span>' : '') +
+      '<br>페이드 ' + c.fi + 's / ' + c.fo + 's · ' + c.vol +
+      (s.layers.length > 1 ? '<br><span class="on">' + s.layers.length + '겹 동시 재생</span>' : '');
+    if (s.layers.length){
+      const sp = document.createElement('div'); sp.className = 'speed';
+      const lb = document.createElement('span'); lb.textContent = '속도';
+      const sel = document.createElement('select');
+      [0.5,0.75,0.9,1,1.1,1.25,1.5,2].forEach(v => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = v + '×';
+        if (v === s.rate) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.onchange = () => {
+        s.rate = parseFloat(sel.value);
+        s.layers.forEach(L => { if (L.audio) try{ L.audio.playbackRate = s.rate; }catch(e){} });
+        render(); persist();
+      };
+      sp.append(lb, sel); meta.appendChild(sp);
+      // ── 재생 위치 (중간부터 재생 / 재생 중 이동)
+      const sk = document.createElement('div'); sk.className = 'seek';
+      const rg = document.createElement('input');
+      rg.type = 'range'; rg.min = 0; rg.max = 1000; rg.step = 1; rg.id = 'sk-' + c.q;
+      rg.title = '재생 위치 — 재생 중이면 바로 이동, 멈춰 있으면 다음 재생 시작점';
+      const tl = document.createElement('span'); tl.className = 'mono tpos'; tl.id = 'tp-' + c.q;
+      const span0 = spanOf(s);
+      rg.value = span0 > 0 ? Math.round((s.startAt || 0) / span0 * 1000) : 0;
+      tl.textContent = fmt(s.startAt || 0) + ' / ' + fmt(span0);
+      rg.onpointerdown = () => { s.seeking = true; };
+      rg.oninput = () => {
+        const off = spanOf(s) * rg.value / 1000;
+        tl.textContent = fmt(off) + ' / ' + fmt(spanOf(s));
+        if (s.playing) seekTo(s, off); else { s.startAt = off; }
+      };
+      rg.onchange = () => { s.seeking = false; render(); };
+      sk.append(rg, tl); meta.appendChild(sk);
+      const sb = document.createElement('div'); sb.className = 'seekbtns';
+      const mkB = (t, fn, ttl) => { const b = document.createElement('button'); b.textContent = t; b.title = ttl; b.onclick = fn; return b; };
+      sb.append(
+        mkB('−10초', () => nudge(s, -10), '10초 뒤로'),
+        mkB('+10초', () => nudge(s, 10), '10초 앞으로'),
+        mkB('처음', () => { if (s.playing) seekTo(s, 0); s.startAt = 0; render(); }, '시작점을 처음으로')
+      );
+      meta.appendChild(sb);
+      if (!s.playing && s.startAt > 0){
+        const hs = document.createElement('div'); hs.className = 'startat';
+        hs.textContent = '▶ 다음 재생은 ' + fmt(s.startAt) + '부터';
+        meta.appendChild(hs);
+      }
+    }
+
+    const slotcol = document.createElement('div');
+    slotcol.className = 'slotcol';
+    if (CAN_FILE(c)){
+      const box = document.createElement('div'); box.className = 'layers';
+      s.layers.forEach((L, idx) => {
+        const el = document.createElement('div'); el.className = 'layer';
+        const nm = document.createElement('div'); nm.className = 'nm';
+        const tag = document.createElement('b'); tag.textContent = (idx + 1);
+        const t = document.createElement('span'); t.textContent = L.err === '불러오는 중…' ? '불러오는 중…' : L.name;
+        const x = document.createElement('span'); x.className = 'x'; x.textContent = '✕';
+        x.title = '이 음원 빼기';
+        x.onclick = () => removeLayer(i, idx);
+        nm.append(tag, t, x);
+        el.appendChild(nm);
+        if (L.audio){
+          const mix = document.createElement('div'); mix.className = 'mix';
+          const r = document.createElement('input');
+          r.type = 'range'; r.min = 0; r.max = 100; r.value = Math.round(L.gain * 100);
+          r.title = '이 음원의 섞임 정도';
+          const v = document.createElement('span'); v.className = 'mono'; v.textContent = r.value;
+          r.oninput = () => {
+            L.gain = r.value / 100; v.textContent = r.value;
+            if (s.playing) try{ L.audio.volume = level(c.vol) * L.gain; }catch(e){}
+            persist();
+          };
+          mix.append(r, v); el.appendChild(mix);
+
+          const tg = document.createElement('div'); tg.className = 'trimtoggle';
+          const cut = (L.inPt > 0 || L.outPt != null);
+          tg.textContent = (L.trim ? '자르기 닫기' : '자르기') +
+            (cut ? '  ' + fmt(L.inPt) + '–' + fmt(L.outPt != null ? L.outPt : L.dur) : '');
+          if (cut) tg.classList.add('cut');
+          tg.onclick = () => { L.trim = !L.trim; render(); };
+          el.appendChild(tg);
+
+          if (L.trim){
+            const tp = document.createElement('div'); tp.className = 'trim';
+            const dur = L.dur || 0;
+            const mk = (label, get, set) => {
+              const wrap = document.createElement('div'); wrap.className = 'mix';
+              const lb = document.createElement('span'); lb.className = 'tl'; lb.textContent = label;
+              const rr = document.createElement('input');
+              rr.type = 'range'; rr.min = 0; rr.max = Math.max(1, Math.round(dur * 10)); rr.step = 1;
+              rr.value = Math.round(get() * 10);
+              const tv = document.createElement('span'); tv.className = 'mono'; tv.textContent = fmt(get());
+              rr.oninput = () => { set(rr.value / 10); tv.textContent = fmt(rr.value / 10); };
+              rr.onchange = () => { render(); persist(); };
+              wrap.append(lb, rr, tv); return wrap;
+            };
+            tp.appendChild(mk('시작', () => L.inPt, x => { L.inPt = Math.min(x, (L.outPt != null ? L.outPt : dur) - 0.2); }));
+            tp.appendChild(mk('끝', () => (L.outPt != null ? L.outPt : dur), x => { L.outPt = (x >= dur - 0.05) ? null : Math.max(x, L.inPt + 0.2); }));
+            const btns = document.createElement('div'); btns.className = 'trimbtns';
+            const bNow = document.createElement('button');
+            bNow.textContent = '지금 위치를 시작점으로';
+            bNow.onclick = () => { L.inPt = L.audio.currentTime; render(); persist(); };
+            const bRst = document.createElement('button');
+            bRst.textContent = '전체로';
+            bRst.onclick = () => { L.inPt = 0; L.outPt = null; render(); persist(); };
+            btns.append(bNow, bRst); tp.appendChild(btns);
+            el.appendChild(tp);
+          }
+        }
+        box.appendChild(el);
+      });
+      const add = document.createElement('div');
+      add.className = 'addfile'; add.tabIndex = 0;
+      add.textContent = s.layers.length ? '+ 음원 겹치기' : (REQ_FILE(c) ? '파일 지정' : '반주 음원 (선택)');
+      add.onclick = () => pickInto(i);
+      add.onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); pickInto(i); } };
+      add.ondragover = e => { e.preventDefault(); add.classList.add('drop'); };
+      add.ondragleave = () => add.classList.remove('drop');
+      add.ondrop = e => { e.preventDefault(); add.classList.remove('drop');
+        [...e.dataTransfer.files].forEach(f => addFile(i, f)); };
+      box.appendChild(add);
+      slotcol.appendChild(box);
+    } else {
+      const na = document.createElement('div'); na.className = 'na'; na.textContent = c.src;
+      slotcol.appendChild(na);
+    }
+
+    const acts = document.createElement('div');
+    acts.className = 'row-actions';
+    const isAction = ['덕킹','컷','정지','복귀'].includes(c.kind);
+    const b1 = document.createElement('button'); b1.className = 'go1';
+    b1.textContent = isAction ? '실행' : (s.playing ? '정지' : '재생');
+    b1.onclick = () => { s.playing ? stop(i) : fire(i); };
+    b1.disabled = !isAction && !s.layers.some(L => L.audio);
+    const bl = document.createElement('button');
+    bl.className = 'loopbtn' + (s.loopOn ? ' on' : '');
+    bl.textContent = '반복';
+    bl.setAttribute('aria-pressed', s.loopOn ? 'true' : 'false');
+    bl.onclick = () => { s.loopOn = !s.loopOn; render(); persist(); };
+    bl.disabled = !CAN_FILE(c);
+    const b2 = document.createElement('button');
+    b2.textContent = '여기서 대기';
+    b2.onclick = () => { standing = i; render(); };
+    acts.append(b1, bl, b2);
+
+    row.append(id, main, meta, slotcol, acts);
+    list.appendChild(row);
+  });
+  updateStatus();
+}
+
+function updateStatus(){
+  const need = state.filter(s => REQ_FILE(s.cue));
+  const got = need.filter(s => s.layers.some(L => L.audio)).length;
+  const tracks = state.reduce((a, s) => a + s.layers.filter(L => L.audio).length, 0);
+  document.getElementById('count').innerHTML =
+    '음원 <b>' + got + '</b> / ' + need.length + ' 큐 · 트랙 ' + tracks + '개';
+  const s = state[standing];
+  document.getElementById('standingName').textContent = s ? s.cue.q + ' — ' + s.cue.what : '—';
+  const on = state.filter(x => x.playing).map(x => x.cue.q);
+  document.getElementById('nowPlaying').innerHTML =
+    on.length ? '재생 중 <b>' + on.join(', ') + '</b>' : '재생 중 없음';
+}
+
+/* ── 재생 위치 ─────────────────────────────────────────── */
+function spanOf(s){
+  const L = s.layers.find(x => x.audio);
+  if (!L) return 0;
+  const b = (L.outPt != null) ? L.outPt : (L.dur || 0);
+  return Math.max(0, b - (L.inPt || 0));
+}
+function curOff(s){
+  const L = s.layers.find(x => x.audio);
+  return L ? Math.max(0, L.audio.currentTime - (L.inPt || 0)) : 0;
+}
+function seekTo(s, off){
+  s.layers.forEach(L => {
+    if (!L.audio) return;
+    const b = (L.outPt != null) ? L.outPt : (L.dur || 0);
+    try{ L.audio.currentTime = Math.max(L.inPt || 0, Math.min(b - 0.05, (L.inPt || 0) + off)); }catch(e){}
+  });
+}
+function nudge(s, d){
+  const span = spanOf(s);
+  if (s.playing) seekTo(s, Math.max(0, Math.min(span - 0.1, curOff(s) + d)));
+  else s.startAt = Math.max(0, Math.min(Math.max(0, span - 0.5), (s.startAt || 0) + d));
+  render();
+}
+
+/* ── 파일 넣기 ─────────────────────────────────────────── */
+function pickInto(i){
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.multiple = true;
+  inp.onchange = () => [...inp.files].forEach(f => addFile(i, f));
+  inp.click();
+}
+
+function bulkAssign(fileList){
+  const files = [...fileList].filter(f => new RegExp('\\.(' + EXTS.join('|') + ')$', 'i').test(f.name));
+  if (!files.length){ alert('오디오 파일을 찾지 못했습니다.'); return; }
+  let n = 0;
+  files.forEach(f => {
+    const m = f.name.match(/(^|[^0-9a-z])q0*(\d{1,2})([a-z])?(?![0-9])/i);
+    if (!m) return;
+    const id = 'Q' + Number(m[2]) + (m[3] ? m[3].toUpperCase() : '');
+    const i = state.findIndex(s => s.cue.q === id);
+    if (i >= 0 && CAN_FILE(state[i].cue)){
+      addFile(i, f); n++;
+      (state[i].cue.also || []).forEach(q2 => { const j = state.findIndex(s => s.cue.q === q2); if (j >= 0) addFile(j, f); });
+    }
+  });
+  render();
+  alert(n ? n + '개 트랙을 배치했습니다.\n같은 큐 번호를 가진 파일은 겹쳐서 동시에 재생됩니다.'
+          : files.length + '개 파일을 읽었지만 큐 번호를 찾지 못했습니다.\n\n파일 이름을 Q13.mp3 형식으로 바꾸거나,\n각 큐의 파일 칸을 눌러 직접 넣으세요.');
+}
+
+document.getElementById('pickFiles').onclick = () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.multiple = true;
+  inp.onchange = () => bulkAssign(inp.files);
+  inp.click();
+};
+document.getElementById('pickFolder').onclick = () => {
+  const inp = document.createElement('input');
+  inp.type = 'file'; inp.webkitdirectory = true; inp.multiple = true;
+  inp.onchange = () => bulkAssign(inp.files);
+  inp.click();
+};
+document.getElementById('clearAll').onclick = async () => {
+  if (!confirm('이 브라우저에 저장된 음원과 설정을 모두 지웁니다. 계속할까요?')) return;
+  state.forEach((s, i) => { while (s.layers.length) removeLayer(i, 0); });
+  try{ await IDB.clear(); }catch(e){}
+  render();
+};
+
+/* ── 재생 · 페이드 · 반복 ──────────────────────────────── */
+function ramp(audio, from, to, sec, done){
+  if (sec <= 0){ try{ audio.volume = to; }catch(e){} if (done) done(); return; }
+  const t0 = performance.now();
+  (function step(){
+    const p = Math.min(1, (performance.now() - t0) / (sec * 1000));
+    try{ audio.volume = Math.max(0, Math.min(1, from + (to - from) * p)); }catch(e){}
+    if (p < 1) requestAnimationFrame(step); else if (done) done();
+  })();
+}
+const findCue = q => state.findIndex(s => s.cue.q === q);
+
+function fire(i){
+  const s = state[i], c = s.cue;
+  if (c.kind === '정지'){ stopAll(); return; }
+  if (c.kind === '덕킹' && c.target){
+    const t = state[findCue(c.target)];
+    if (t && t.playing) t.layers.forEach(L => {
+      if (!L.audio) return;
+      const to = (c.duckMul != null) ? level(t.cue.vol) * L.gain * c.duckMul
+                                     : level(c.duckTo || 'PP') * L.gain;
+      ramp(L.audio, L.audio.volume, to, c.fi || 2);
+    });
+    return;
+  }
+  if (c.kind === '컷'){
+    (c.targets || [c.target]).forEach(q => {
+      const j = findCue(q);
+      if (j >= 0) stop(j, !c.cutFade, c.cutFade);
+    });
+    return;
+  }
+  if (c.kind === '복귀' && c.target){
+    const t = state[findCue(c.target)];
+    if (t && t.playing) t.layers.forEach(L => { if (L.audio) ramp(L.audio, L.audio.volume, level(t.cue.vol) * L.gain, c.fi || 3); });
+    return;
+  }
+  (c.stopFirst || []).forEach(q => { const j = findCue(q); if (j >= 0) stop(j, false, 3); });
+  const live = s.layers.filter(L => L.audio);
+  if (!live.length) return;
+  const startOff = s.startAt || 0;
+  let ok = 0;
+  live.forEach(L => {
+    const target = level(c.vol) * L.gain;
+    const b = (L.outPt != null) ? L.outPt : (L.dur || Infinity);
+    try{ L.audio.currentTime = Math.min((L.inPt || 0) + startOff, b - 0.05); }catch(e){}
+    L.audio.loop = false;
+    try{ L.audio.playbackRate = s.rate; if ('preservesPitch' in L.audio) L.audio.preservesPitch = true; }catch(e){}
+    try{ L.audio.volume = c.fi > 0 ? 0 : target; }catch(e){}
+    L.audio.play().then(() => {
+      ok++; L.err = null; s.playing = true; s.startAt = 0;
+      ramp(L.audio, L.audio.volume, target, c.fi);
+      render();
+    }).catch(err => {
+      L.err = (err && err.name === 'NotAllowedError')
+        ? '브라우저가 막았습니다. 재생을 한 번 더 눌러주세요'
+        : '재생 실패 — 사파리나 크롬에서 열어보세요';
+      render();
+    });
+  });
+}
+
+function stop(i, hard, secOverride){
+  const s = state[i];
+  if (!s.playing) return;
+  const fo = (secOverride != null) ? secOverride : (hard ? 0 : s.cue.fo);
+  s.playing = false;
+  s.layers.forEach(L => {
+    if (!L.audio) return;
+    ramp(L.audio, L.audio.volume, 0, fo, () => {
+      try{ L.audio.pause(); L.audio.currentTime = L.inPt || 0; }catch(e){}
+      render();
+    });
+  });
+  render();
+}
+function stopAll(){ state.forEach((s, i) => stop(i)); }
+
+function go(){
+  const s = state[standing];
+  if (!s) return;
+  fire(standing);
+  const el = document.getElementById('row-' + s.cue.q);
+  if (standing < state.length - 1) standing++;
+  render();
+  if (el) el.scrollIntoView({block:'center', behavior:'smooth'});
+}
+document.getElementById('master').oninput = e => {
+  MASTER = e.target.value / 100;
+  document.getElementById('masterVal').textContent = e.target.value;
+  persist();
+  state.forEach(s => { if (s.playing) s.layers.forEach(L => {
+    if (L.audio) try{ L.audio.volume = level(s.cue.vol) * L.gain; }catch(err){}
+  }); });
+};
+document.getElementById('goBtn').onclick = go;
+document.getElementById('stopBtn').onclick = stopAll;
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space'){ e.preventDefault(); go(); }
+  if (e.key === 'Escape'){ e.preventDefault(); stopAll(); }
+});
+setInterval(() => {
+  state.forEach(s => {
+    if (!s.playing || s.seeking) return;
+    const rg = document.getElementById('sk-' + s.cue.q), tl = document.getElementById('tp-' + s.cue.q);
+    if (!rg) return;
+    const span = spanOf(s), off = curOff(s);
+    if (span > 0) rg.value = Math.round(Math.min(1, off / span) * 1000);
+    if (tl) tl.textContent = fmt(off) + ' / ' + fmt(span);
+  });
+}, 250);
+
+
+/* ── 자동 저장 (이 브라우저에 남음) ─────────────────────── */
+const IDB = (() => {
+  let dbp;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open('ssscue', 1);
+    r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  }));
+  const st = async m => (await open()).transaction('kv', m).objectStore('kv');
+  const wrap = q => new Promise((res, rej) => { q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+  return {
+    get: async k => wrap((await st('readonly')).get(k)),
+    set: async (k, v) => wrap((await st('readwrite')).put(v, k)),
+    clear: async () => wrap((await st('readwrite')).clear())
+  };
+})();
+
+let SAVING = false, SAVE_TIMER = null;
+function persist(){
+  clearTimeout(SAVE_TIMER);
+  SAVE_TIMER = setTimeout(doPersist, 400);
+}
+async function doPersist(){
+  if (SAVING) return;
+  SAVING = true;
+  try{
+    const meta = {};
+    for (const s of state){
+      const layers = [];
+      for (const L of s.layers){
+        if (!L.audio && !L.file) continue;
+        if (L.file && !L.key){
+          L.key = 'b:' + s.cue.q + ':' + Math.random().toString(36).slice(2, 9);
+          await IDB.set(L.key, L.file);
+        }
+        layers.push({name:L.name, gain:L.gain, inPt:L.inPt, outPt:L.outPt,
+                     key:L.key || null, url:L.file ? null : L.url});
+      }
+      if (layers.length || s.rate !== 1 || s.loopOn !== !!s.cue.loop)
+        meta[s.cue.q] = {rate:s.rate, loopOn:s.loopOn, layers};
+    }
+    await IDB.set('meta', meta);
+    await IDB.set('master', MASTER);
+    flash('저장됨');
+  }catch(e){ console.warn('save failed', e); }
+  finally{ SAVING = false; }
+}
+
+async function restoreFiles(){
+  let meta;
+  try{ meta = await IDB.get('meta'); }catch(e){ return 0; }
+  if (!meta) return 0;
+  try{
+    const m = await IDB.get('master');
+    if (m != null){
+      MASTER = m;
+      document.getElementById('master').value = Math.round(m * 100);
+      document.getElementById('masterVal').textContent = Math.round(m * 100);
+    }
+  }catch(e){}
+  let n = 0;
+  for (const [q, v] of Object.entries(meta)){
+    const i = state.findIndex(s => s.cue.q === q);
+    if (i < 0) continue;
+    const s = state[i];
+    if (v.rate) s.rate = v.rate;
+    if (v.loopOn != null) s.loopOn = v.loopOn;
+    for (const li of (v.layers || [])){
+      if (!li.key) continue;                    // 링크 음원은 매번 서버에서 새로 받는다
+      if (s.layers.some(L => L.name === li.name)) continue;
+      let f = null;
+      try{ f = await IDB.get(li.key); }catch(e){}
+      if (!f) continue;
+      const r = await srcFromFile(f);
+      const L = makeLayer(i, r.url, li.name, f, r.kind);
+      L.key = li.key;
+      L.gain = (li.gain != null) ? li.gain : 1;
+      L.inPt = li.inPt || 0;
+      L.outPt = (li.outPt != null) ? li.outPt : null;
+      s.layers.push(L); n++;
+    }
+  }
+  return n;
+}
+
+// 저장해둔 볼륨·자르기 값을 지금 붙어 있는 트랙에 이름으로 맞춰 적용
+async function applySaved(){
+  let meta;
+  try{ meta = await IDB.get('meta'); }catch(e){ return 0; }
+  if (!meta) return 0;
+  let n = 0;
+  for (const [q, v] of Object.entries(meta)){
+    const i = state.findIndex(s => s.cue.q === q);
+    if (i < 0) continue;
+    const s = state[i];
+    if (v.rate) s.rate = v.rate;
+    if (v.loopOn != null) s.loopOn = v.loopOn;
+    (v.layers || []).forEach((li, k) => {
+      const L = s.layers.find(x => x.name === li.name) || s.layers[k];
+      if (!L) return;
+      if (li.gain != null) L.gain = li.gain;
+      L.inPt = li.inPt || 0;
+      L.outPt = (li.outPt != null) ? li.outPt : null;
+      n++;
+    });
+  }
+  return n;
+}
+
+let FLASH_T = null;
+function flash(msg){
+  const el = document.getElementById('saved');
+  if (!el) return;
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(FLASH_T);
+  FLASH_T = setTimeout(() => { el.hidden = true; }, 1600);
+}
+
+/* ── 링크 배포 시 자동 연결 ────────────────────────────── */
+async function autoLoadFromServer(){
+  if (!/^https?:$/.test(location.protocol)) return 0;
+  let found = 0;
+  try{
+    const r = await fetch('manifest.json', {cache:'no-store'});
+    if (r.ok){
+      const map = await r.json();
+      for (const [q, val] of Object.entries(map)){
+        const i = state.findIndex(s => s.cue.q === q);
+        if (i < 0) continue;
+        (Array.isArray(val) ? val : [val]).forEach(path => {
+          addURL(i, path, path.split('/').pop()); found++;
+        });
+      }
+      return found;
+    }
+  }catch(e){}
+
+  const exists = async url => {
+    try{ const r = await fetch(url, {method:'HEAD'}); return r.ok; }catch(e){ return false; }
+  };
+  const SUFFIX = ['', '_1', '_2', '_3', '_4', '_5'];
+
+  const jobs = state.map((s, i) => (async () => {
+    if (!CAN_FILE(s.cue)) return;
+    let ctx = null;                                   // 처음 찾은 폴더·확장자를 기억
+    for (const sfx of SUFFIX){
+      const base = s.cue.q + sfx;
+      if (ctx){
+        const url = ctx.dir + base + ctx.ext;
+        if (await exists(url)){ addURL(i, url, base + ctx.ext); found++; }
+        continue;
+      }
+      let hit = false;
+      for (const dir of ['', 'audio/']){
+        for (const ext of EXTS){
+          const url = dir + base + '.' + ext;
+          if (await exists(url)){
+            addURL(i, url, base + '.' + ext); found++;
+            ctx = {dir, ext:'.' + ext}; hit = true; break;
+          }
+        }
+        if (hit) break;
+      }
+    }
+  })());
+  await Promise.all(jobs);
+  return found;
+}
+
+/* ── 설정 파일 (mix.json) ──────────────────────────────── */
+function buildMix(){
+  const mix = {version:1, savedAt:new Date().toISOString(), master:MASTER, cues:{}};
+  state.forEach(s => {
+    const layers = s.layers.filter(L => L.audio || L.file).map(L => ({
+      name:L.name, gain:Math.round(L.gain * 100) / 100,
+      inPt:Math.round((L.inPt || 0) * 100) / 100,
+      outPt:(L.outPt != null) ? Math.round(L.outPt * 100) / 100 : null,
+      url:(L.file ? null : L.url)
+    }));
+    if (layers.length || s.rate !== 1 || s.loopOn !== !!s.cue.loop)
+      mix.cues[s.cue.q] = {rate:s.rate, loop:s.loopOn, layers};
+  });
+  return mix;
+}
+
+async function applyMix(mix, opts){
+  if (!mix || !mix.cues) return 0;
+  const loadAudio = !!(opts && opts.loadAudio);
+  if (mix.master != null){
+    MASTER = mix.master;
+    document.getElementById('master').value = Math.round(MASTER * 100);
+    document.getElementById('masterVal').textContent = Math.round(MASTER * 100);
+  }
+  let n = 0;
+  for (const [q, v] of Object.entries(mix.cues)){
+    const i = state.findIndex(s => s.cue.q === q);
+    if (i < 0) continue;
+    const s = state[i];
+    if (v.rate) s.rate = v.rate;
+    if (v.loop != null) s.loopOn = v.loop;
+    (v.layers || []).forEach((li, k) => {
+      let L = s.layers[k];
+      if (!L && loadAudio && li.url){          // 링크에 올려둔 음원이면 새로 연결
+        L = makeLayer(i, li.url, li.name || li.url.split('/').pop(), null, 'url');
+        s.layers.push(L);
+      }
+      if (!L) return;
+      L.gain = (li.gain != null) ? li.gain : 1;
+      L.inPt = li.inPt || 0;
+      L.outPt = (li.outPt != null) ? li.outPt : null;
+      if (L.audio){
+        try{ L.audio.playbackRate = s.rate; }catch(e){}
+      }
+      n++;
+    });
+  }
+  render(); persist();
+  return n;
+}
+
+document.getElementById('exportMix').onclick = () => {
+  const blob = new Blob([JSON.stringify(buildMix(), null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'mix.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  flash('mix.json 내보냄');
+};
+
+document.getElementById('importMix').onclick = () => {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = async () => {
+      try{
+        const n = await applyMix(JSON.parse(r.result), {loadAudio:true});
+        alert(n + '개 트랙에 설정을 적용했습니다.');
+      }catch(e){ alert('설정 파일을 읽지 못했습니다.\n' + e); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+};
+
+/* ── 공유 파일 만들기 ──────────────────────────────────── */
+function readAsDataURL(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result); r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+function dataURLtoFile(dataURL, name){
+  const [head, b64] = dataURL.split(',');
+  let mime = (head.match(/data:([^;]+)/) || [,'audio/mpeg'])[1];
+  if (!/^audio\//.test(mime)) mime = AUDIO_MIME(name);
+  const bin = atob(b64);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return new File([buf], name, {type:mime});
+}
+document.getElementById('pack').onclick = async () => {
+  const items = [];
+  state.forEach(s => s.layers.forEach(L => { if (L.file) items.push({q:s.cue.q, L}); }));
+  if (!items.length){
+    alert('브라우저에서 직접 넣은 음원만 공유 파일에 담을 수 있습니다.\n링크로 자동 연결된 음원은 주소만 공유하세요.');
+    return;
+  }
+  const total = items.reduce((a, x) => a + x.L.file.size, 0);
+  if (!confirm('트랙 ' + items.length + '개를 넣은 공유 파일을 만듭니다.\n예상 크기 약 ' +
+               (total * 1.37 / 1048576).toFixed(0) + 'MB. 계속할까요?')) return;
+  const btn = document.getElementById('pack');
+  btn.disabled = true; btn.textContent = '만드는 중…';
+  try{
+    const payload = {};
+    for (const x of items){
+      const st = state[findCue(x.q)];
+      (payload[x.q] = payload[x.q] || []).push({name:x.L.name, gain:x.L.gain,
+        inPt:x.L.inPt, outPt:x.L.outPt, rate:st ? st.rate : 1,
+        data: await readAsDataURL(x.L.file)});
+    }
+    const clone = document.documentElement.cloneNode(true);
+    clone.querySelector('#list').innerHTML = '';
+    const old = clone.querySelector('#embed'); if (old) old.remove();
+    clone.querySelectorAll('button').forEach(b => b.disabled = false);
+    const sc = document.createElement('script');
+    sc.id = 'embed'; sc.textContent = 'window.__EMBED=' + JSON.stringify(payload) + ';';
+    const body = clone.querySelector('body');
+    body.insertBefore(sc, body.firstChild);
+    const blob = new Blob(['<!DOCTYPE html>\n', clone.outerHTML], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'SingSingSing_Sound_Console_음원포함.html';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }catch(e){
+    alert('파일을 만들지 못했습니다. 용량이 너무 크면 실패할 수 있습니다.\n' + e);
+  }finally{
+    btn.disabled = false; btn.textContent = '공유 파일 만들기';
+  }
+};
+
+/* ── 시작 ─────────────────────────────────────────────── */
+const HINT_BASE =
+  '한 큐에 음원을 여러 개 넣으면 <b>동시에 겹쳐 재생</b>됩니다. 각 트랙의 슬라이더로 섞임 정도를 맞추세요. ' +
+  '<kbd>Space</kbd> 다음 큐 · <kbd>Esc</kbd> 전체 정지. ' +
+  '<b>중간부터 틀기:</b> 큐의 재생 위치 막대를 끌거나 ±10초를 누르면 멈춰 있을 땐 다음 재생 시작점, 재생 중엔 그 자리로 바로 이동합니다. ' +
+  '음원은 큐시트 음량 단계에 맞춰 미리 레벨을 맞춰 두었습니다.';
+
+async function boot(){
+  render();
+
+  if (window.__EMBED){
+    const b = document.getElementById('badge');
+    b.hidden = false; b.textContent = '음원 포함 패키지';
+    document.getElementById('hint').innerHTML = HINT_BASE;
+    for (const [q, arr] of Object.entries(window.__EMBED)){
+      const i = state.findIndex(s => s.cue.q === q);
+      if (i < 0) continue;
+      for (const v of (Array.isArray(arr) ? arr : [arr])){
+        try{
+          const f = dataURLtoFile(v.data, v.name);
+          const r = await srcFromFile(f);
+          const L = makeLayer(i, r.url, v.name, f, r.kind);
+          L.gain = (v.gain != null) ? v.gain : 1;
+          L.inPt = v.inPt || 0;
+          L.outPt = (v.outPt != null) ? v.outPt : null;
+          if (v.rate) state[i].rate = v.rate;
+          state[i].layers.push(L);
+        }catch(e){ console.warn(q, e); }
+      }
+    }
+    render(); return;
+  }
+
+  const net = await autoLoadFromServer();          // ① 링크에 올려둔 음원
+  const saved = await restoreFiles();              // ② 이 브라우저에 저장해둔 음원
+  let mixed = 0;
+  if (/^https?:$/.test(location.protocol)){        // ③ 공유 설정
+    try{
+      const r = await fetch('mix.json', {cache:'no-store'});
+      if (r.ok) mixed = await applyMix(await r.json(), {loadAudio:false});
+    }catch(e){}
+  }
+  await applySaved();                              // ④ 내가 만진 값이 최종
+
+  const badge = document.getElementById('badge');
+  const hint = document.getElementById('hint');
+  const parts = [];
+  if (net) parts.push('링크 음원 ' + net + '트랙');
+  if (saved) parts.push('저장분 ' + saved + '트랙');
+  if (mixed) parts.push('공유 설정');
+  if (parts.length){
+    badge.hidden = false; badge.className = 'badge net';
+    badge.textContent = parts.join(' · ') + ' 연결';
+  }
+  const miss = state.filter(s => REQ_FILE(s.cue) && !s.layers.length).map(s => s.cue.q);
+  let head = '';
+  if (miss.length) head = '<b>음원이 아직 없는 큐:</b> ' + miss.join(', ') + '<br>';
+  else if (!parts.length && /^https?:$/.test(location.protocol))
+    head = '음원을 <span class="mono">Q13.mp3</span> 형식으로 이 주소 옆에 올려두면 열자마자 붙습니다.<br>';
+  else if (!parts.length)
+    head = '파일 이름을 <span class="mono">Q13.mp3</span>, 겹칠 음원은 <span class="mono">Q13_2.mp3</span>로 지어두면 <b>음원 파일 넣기</b>로 한번에 배치됩니다.<br>';
+  hint.innerHTML = head + HINT_BASE;
+  render();
+}
+boot();
+</script>
+</body>
+</html>

@@ -61,6 +61,9 @@
 
   .meta{font-size:12px; color:var(--dim)}
   .meta .on{color:var(--lamp); font-weight:700}
+  .fades{display:flex; flex-wrap:wrap; gap:6px 10px; margin-top:7px}
+  .fades label{display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--cream)}
+  .fades input{width:54px; padding:3px 4px; font:inherit; font-size:12px; color:var(--cream); background:var(--panel-2); border:1px solid #3a4360; border-radius:6px; text-align:right}
   .bar-mini{height:3px; background:#2C3448; border-radius:2px; margin-top:8px; overflow:hidden}
   .bar-mini i{display:block; height:100%; width:0; background:var(--lamp)}
 
@@ -163,6 +166,7 @@
     <button id="importMix">설정 불러오기</button>
     <button id="pack">공유 파일 만들기</button>
     <span class="badge saved" id="saved" hidden>저장됨</span>
+    <button id="fadeReset">페이드 기본값</button>
     <button id="clearAll">전체 비우기</button>
   </div>
 </header>
@@ -185,42 +189,38 @@
 /* ── 큐 데이터 ───────────────────────────────────────────── */
 const CUES = [
  {"q": "Q0", "act": "프롤로그", "trig": "객석 정리 · 안내방송 시작", "what": "주제곡 (안내방송 배경)", "kind": "베드", "len": "~3분", "loop": true, "fi": 2, "fo": 5, "vol": "MP", "src": "Q00_주제곡_객석입장.mp3 (Q1과 공용)", "term": "", "note": "안내방송이 끝나면 방송과 함께 페이드아웃 → 암전", "also": ["Q1"]},
- {"q": "Q1", "act": "프롤로그", "trig": "조명 큐와 동시", "what": "주제곡 다시 재생 (처음부터, 작게)", "kind": "베드", "len": "~2분", "loop": true, "fi": 0, "fo": 3, "vol": "MP", "src": "Q0 동일 음원", "term": "", "note": "반드시 처음부터 · 조명 큐와 정확히 동시"},
+ {"q": "Q0B", "act": "프롤로그", "trig": "안내방송 종료", "what": "Q0 주제곡 페이드아웃", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q0 제어", "term": "", "note": "5초에 걸쳐 꺼짐 → 암전", "targets": ["Q0"], "cutFade": 5},
+ {"q": "Q1", "act": "프롤로그", "trig": "조명 큐와 동시", "what": "주제곡 다시 재생 (처음부터, 작게)", "kind": "베드", "len": "~2분", "loop": true, "fi": 0, "fo": 3, "vol": "MP", "src": "Q0 동일 음원", "term": "", "note": "반드시 처음부터 · 조명 큐와 정확히 동시 · Q0가 아직 나오면 1초 만에 자동 정리", "stopFirst": ["Q0"], "stopFade": 1},
  {"q": "Q2", "act": "프롤로그", "trig": "알레그로 대사 시작", "what": "Q1 볼륨 30% 다운", "kind": "덕킹", "len": "—", "loop": false, "fi": 2, "fo": 0, "vol": "MP", "src": "Q1 제어", "term": "", "note": "끊지 않고 볼륨만 30% 내림", "target": "Q1", "duckMul": 0.7},
  {"q": "Q3", "act": "프롤로그", "trig": "“한 가지 고민이 있었지.”", "what": "Q1 즉시 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q1 제어", "term": "", "note": "페이드 없이 정박에 딱 정지", "target": "Q1"},
- {"q": "Q4", "act": "프롤로그", "trig": "“알레그로가 먼저 불러볼게!”", "what": "hook 반주 1회 (알레그로 시범)", "kind": "라이브", "len": "~30초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "모티프 율동과 함께"},
- {"q": "Q4A", "act": "프롤로그", "trig": "“친구들이 불러볼까? 준비, 시작!”", "what": "hook 반주 2회 (관객만 부르기)", "kind": "라이브", "len": "~30초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "‘친구들’ = 관객 · 모티프 율동과 함께"},
- {"q": "Q4B", "act": "프롤로그", "trig": "“모두 함께 따라 불러볼까? 준비, 시작!”", "what": "hook 반주 3회 (전원 + 관객 합창)", "kind": "라이브", "len": "~40초", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브 / 반주 음원", "term": "", "note": "관객 콜앤리스폰스 · 길이 가변"},
- {"q": "Q6", "act": "1막 · 음악이 사라진 마을", "trig": "스크린 회색 마을", "what": "주제곡 마이너·느리게 + 차가운 앰비언스", "kind": "베드", "len": "5분+", "loop": true, "fi": 3, "fo": 3, "vol": "PP", "src": "편곡자 + Pixabay", "term": "cold empty ambience drone", "note": "제이 독백 전체를 덮어야 함"},
- {"q": "Q7", "act": "1막 · 음악이 사라진 마을", "trig": "“난 이제 노래 같은 거 안 할래.”", "what": "신디 지속음 3번 → 선율 (라이브)", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MP", "src": "신디 라이브", "term": "", "note": "음원 없음 · 라이브 연주로 대체"},
- {"q": "Q8", "act": "1막 · 음악이 사라진 마을", "trig": "알레그로 튀어나옴", "what": "타악기 잔망스럽게 (라이브)", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "F", "src": "타악 라이브", "term": "", "note": "음원 없음 · 등장 동작에 맞춰 라이브"},
- {"q": "Q9", "act": "1막 · 음악이 사라진 마을", "trig": "“오페라…랜드요?”", "what": "Voi che sapete 전주", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q09_VoiCheSapete_MR.mp3", "term": "", "note": "삽입곡 01 · MR · 전주는 알레그로 대사 밑으로 진행"},
- {"q": "Q10", "act": "1막 · 음악이 사라진 마을", "trig": "“음악에는 멜로디만 있는 게 아니거든.” 직후", "what": "북소리·발 구르는 리듬", "kind": "베드", "len": "8s", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Pixabay", "term": "marching drum stomp rhythm", "note": "템포 등장 · 점점 크게"},
- {"q": "Q11", "act": "1막 · 음악이 사라진 마을", "trig": "“저도 해볼래요!”", "what": "Non più andrai", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "피아노 라이브", "term": "", "note": "삽입곡 02"},
+ {"q": "Q6", "act": "1막 · 음악이 사라진 마을", "trig": "스크린 회색 마을", "what": "차가운 앰비언스 (주제곡 마이너는 피아노 라이브)", "kind": "베드", "len": "5분+", "loop": true, "fi": 3, "fo": 3, "vol": "PP", "src": "Q06_차가운앰비언스_5분루프.mp3", "term": "cold empty ambience drone", "note": "스크린 자막과 동시에 피아노가 주제곡 마이너로 연주 · 이 큐는 차가운 바람 소리만 · Q7에서 자동 페이드아웃"},
+ {"q": "Q7", "act": "1막 · 음악이 사라진 마을", "trig": "라이브 연주 Off · 신디 3음 시작과 동시", "what": "Q6 바람 소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q6 제어", "term": "", "note": "3초에 걸쳐 꺼짐 (이후 신디·차임벨은 라이브)", "targets": ["Q6"], "cutFade": 3},
+ {"q": "Q9", "act": "1막 · 음악이 사라진 마을", "trig": "“오페라…랜드요?”", "what": "Voi che sapete 전주", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q09_VoiCheSapete_MR.mp3", "term": "", "note": "삽입곡 01 · MR · 전주는 알레그로 대사 밑으로 진행", "stopFirst": ["Q6"], "stopFade": 3},
+ {"q": "Q10", "act": "1막 · 음악이 사라진 마을", "trig": "“음악에는 멜로디만 있는 게 아니거든.” 직후", "what": "북소리·발 구르는 리듬", "kind": "베드", "len": "8s", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Q10_북발구르기_2분루프.mp3", "term": "marching drum stomp rhythm", "note": "템포 등장 · 박자 정확한 루프 · Q11에서 자동 페이드아웃"},
+ {"q": "Q11", "act": "1막 · 음악이 사라진 마을", "trig": "Non più andrai 피아노 시작과 동시", "what": "Q10 북소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q10 제어", "term": "", "note": "2초에 걸쳐 꺼짐 (노래는 피아노 라이브)", "targets": ["Q10"], "cutFade": 2},
  {"q": "Q13", "act": "1막 · 음악이 사라진 마을", "trig": "암전 · 템포 퇴장", "what": "물 흐르는 소리", "kind": "베드", "len": "8분+", "loop": true, "fi": 4, "fo": 4, "vol": "MP", "src": "Q13_물흐르는소리_8분루프.mp3", "term": "", "note": "2막 대사 전체 밑에 깔림 · 하프 아르페지오 삭제 · 가장 긴 큐"},
  {"q": "Q15A", "act": "2막 · 오페라랜드의 여행", "trig": "안단테, 노래 준비 자세", "what": "Q13 강물소리 낮추기", "kind": "덕킹", "len": "—", "loop": false, "fi": 4, "fo": 0, "vol": "PP", "src": "Q13 제어", "term": "", "note": "물소리는 끊지 않고 볼륨만 35%로 내림 · 4초", "target": "Q13", "duckMul": 0.35},
  {"q": "Q16", "act": "2막 · 오페라랜드의 여행", "trig": "“바람을 따라 흘러가도록 두는 거야.”", "what": "Habanera", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q16_Habanera_MR.mp3", "term": "", "note": "삽입곡 03 · MR · 강물소리 밑에 깔린 채 진행"},
  {"q": "Q16B", "act": "2막 · 오페라랜드의 여행", "trig": "템포 객석에서 등장", "what": "강물소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 2, "vol": "—", "src": "Q13 제어", "term": "", "note": "2초 페이드로 강물소리 정리", "targets": ["Q13"], "cutFade": 2},
- {"q": "Q17", "act": "2막 · 오페라랜드의 여행", "trig": "템포 등장 직후", "what": "탬버린·캐스터네츠 리듬", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Firefly (완료)", "term": "tambourine castanet rhythm", "note": "강물소리가 멈춘 뒤 들어감"},
- {"q": "Q18", "act": "2막 · 오페라랜드의 여행", "trig": "“심장이 뛰어야 진짜 노래지!”", "what": "두근×3 심장소리 (보통 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q18_심장소리_두근x3.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
+ {"q": "Q17", "act": "2막 · 오페라랜드의 여행", "trig": "템포 등장 직후", "what": "탬버린·캐스터네츠 리듬", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Q17_탬버린캐스터네츠_2분루프.mp3", "term": "tambourine castanet rhythm", "note": "강물소리가 멈춘 뒤 들어감 · Q18에서 자동 페이드아웃"},
+ {"q": "Q18", "act": "2막 · 오페라랜드의 여행", "trig": "“심장이 뛰어야 진짜 노래지!”", "what": "두근×3 심장소리 (보통 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q18_심장소리_두근x3.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작", "stopFirst": ["Q17"], "stopFade": 2},
  {"q": "Q19", "act": "2막 · 오페라랜드의 여행", "trig": "“손가락이 튕겨지고 싶지 않았냐고!”", "what": "두근×6 심장소리 (Q18의 2배 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q19_빠른심장소리_두근x6.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
- {"q": "Q20", "act": "2막 · 오페라랜드의 여행", "trig": "“쿵 짝짝 쿵 짝짝”", "what": "왈츠 리듬 타악기 (박수 유도)", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 0, "vol": "MF", "src": "Pixabay", "term": "waltz percussion clap rhythm", "note": "연출메모: 타악기 같이"},
- {"q": "Q21", "act": "2막 · 오페라랜드의 여행", "trig": "“자 들어봐 안단테”", "what": "La donna è mobile", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q21_LaDonnaEMobile_MR_앞3초컷.mp3", "term": "", "note": "삽입곡 04 · MR · 앞 3초 잘라 바로 나옴"},
- {"q": "Q22", "act": "2막 · 오페라랜드의 여행", "trig": "전 조명 소등 · 푸른빛 1등", "what": "저음 파이프오르간·베이스 드론", "kind": "베드", "len": "6분+", "loop": true, "fi": 3, "fo": 4, "vol": "MP", "src": "Pixabay", "term": "pipe organ low drone ominous", "note": "카덴차 등장~퇴장 전체"},
- {"q": "Q23", "act": "2막 · 오페라랜드의 여행", "trig": "카덴차 첫 대사 직전", "what": "천둥번개", "kind": "스팅어", "len": "5s", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Pixabay", "term": "thunder crack rumble", "note": "스크린 번개와 싱크"},
+ {"q": "Q20", "act": "2막 · 오페라랜드의 여행", "trig": "“쿵 짝짝 쿵 짝짝”", "what": "왈츠 리듬 타악기 (박수 유도)", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 0, "vol": "MF", "src": "Q20_왈츠리듬_박수유도_2분루프.mp3", "term": "waltz percussion clap rhythm", "note": "쿵 짝 짝 · 140BPM 3/4 = La donna è mobile 템포 · Q21에서 자동 정지"},
+ {"q": "Q21", "act": "2막 · 오페라랜드의 여행", "trig": "“자 들어봐 안단테”", "what": "La donna è mobile", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q21_LaDonnaEMobile_MR_앞3초컷.mp3", "term": "", "note": "삽입곡 04 · MR · 앞 3초 잘라 바로 나옴", "stopFirst": ["Q20", "Q17"], "stopFade": 0.5},
+ {"q": "Q22", "act": "2막 · 오페라랜드의 여행", "trig": "전 조명 소등 · 푸른빛 1등", "what": "저음 파이프오르간·베이스 드론", "kind": "베드", "len": "6분+", "loop": true, "fi": 3, "fo": 4, "vol": "MP", "src": "Q22_오르간드론_6분루프.mp3", "term": "pipe organ low drone ominous", "note": "카덴차 등장~퇴장 전체 · Q26에서 자동 페이드아웃"},
+ {"q": "Q23", "act": "2막 · 오페라랜드의 여행", "trig": "카덴차 첫 대사 직전", "what": "천둥번개", "kind": "스팅어", "len": "5s", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q23_천둥.mp3", "term": "thunder crack rumble", "note": "스크린 회오리 영상과 동시"},
  {"q": "Q24", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “쉿! 조용히 해!”", "what": "천둥번개 2회", "kind": "스팅어", "len": "7s", "loop": false, "fi": 0, "fo": 1, "vol": "MF", "src": "Q24_천둥번개_2회.mp3", "term": "thunder crack rumble", "note": "1회차 뒤 3.3초에 2회차"},
  {"q": "Q25", "act": "2막 · 오페라랜드의 여행", "trig": "“이것이 바로 음악이 가진 진정한 무게다!”", "what": "Nessun dorma", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q25_NessunDorma_MR_앞2초컷.mp3", "term": "", "note": "삽입곡 05 · MR · 앞 2초 잘라 바로 나옴"},
- {"q": "Q26", "act": "2막 · 오페라랜드의 여행", "trig": "템포·안단테·알레그로 퇴장", "what": "암전 전환음", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 2, "vol": "MP", "src": "Pixabay", "term": "dark transition swell", "note": "Q22 페이드아웃과 겹침"},
- {"q": "Q27", "act": "3막 · 내 안의 노래를 찾아서", "trig": "제이 무대 중앙 · 따뜻한 핀조명", "what": "스트링 스웰 (따뜻하게)", "kind": "베드", "len": "4분", "loop": true, "fi": 4, "fo": 3, "vol": "PP", "src": "Pixabay", "term": "warm strings ambient pad", "note": "조명 전환과 동시"},
- {"q": "Q27A", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“지금도 계속 뛰고 있어요” 직후", "what": "두근×2 심장소리 (약간 느리게)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q27A_심장소리_두근x2_느리게.mp3", "term": "", "note": "원샷 · 지체 없이 · Q27 스트링이 깔려 있으면 Q27을 살짝 낮출 것"},
- {"q": "Q28", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“그 빛을 믿고 노래해 보려고 해요.”", "what": "O mio babbino caro", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q28_OMioBabbinoCaro_MR.mp3", "term": "", "note": "삽입곡 06 · MR"},
+ {"q": "Q27A", "act": "2막 · 오페라랜드의 여행", "trig": "“지금도 계속 뛰고 있어요” 직후", "what": "두근×2 심장소리 (약간 느리게)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q27A_심장소리_두근x2_느리게.mp3", "term": "", "note": "원샷 · 지체 없이 · 2막 끝 · 템포 대사 직후, 암전 전"},
+ {"q": "Q26", "act": "2막 · 오페라랜드의 여행", "trig": "템포·안단테·알레그로 퇴장", "what": "암전 전환음", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 2, "vol": "MP", "src": "Q26_암전전환음.mp3", "term": "dark transition swell", "note": "3초 원샷 · GO하면 Q22 오르간 드론이 4초에 걸쳐 같이 꺼짐", "stopFirst": ["Q22"], "stopFade": 4},
+ {"q": "Q27", "act": "3막 · 내 안의 노래를 찾아서", "trig": "제이 무대 중앙 · 따뜻한 핀조명", "what": "스트링 스웰 (따뜻하게)", "kind": "베드", "len": "4분", "loop": true, "fi": 4, "fo": 3, "vol": "PP", "src": "Q27_스트링스웰_3분루프.mp3", "term": "warm strings ambient pad", "note": "조명 전환과 동시 · Q28에서 자동 페이드아웃"},
+ {"q": "Q28", "act": "3막 · 내 안의 노래를 찾아서", "trig": "O mio babbino caro 피아노 시작과 동시", "what": "Q27 스트링 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q27 제어", "term": "", "note": "3초에 걸쳐 꺼짐 (노래는 피아노 라이브)", "targets": ["Q27"], "cutFade": 3},
  {"q": "Q29", "act": "3막 · 내 안의 노래를 찾아서", "trig": "배경 스크린 — 불꽃이 별이 됨", "what": "반짝임 스파클 (긴 버전)", "kind": "베드", "len": "2분", "loop": true, "fi": 2, "fo": 2, "vol": "PP", "src": "Q29_반짝임_긴버전_2분루프.mp3", "term": "", "note": "영상 싱크 · 노래 밑 아주 작게"},
- {"q": "Q30", "act": "3막 · 내 안의 노래를 찾아서", "trig": "세 요정 축제 의상 등장", "what": "환호 + 축제 타악", "kind": "스팅어", "len": "4s", "loop": false, "fi": 0, "fo": 2, "vol": "F", "src": "Pixabay", "term": "crowd cheer festive celebration", "note": "연출메모: 환호하며"},
- {"q": "Q31", "act": "3막 · 내 안의 노래를 찾아서", "trig": "“우리 마음속의 노래를 위해서!”", "what": "Brindisi", "kind": "라이브", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "라이브", "term": "", "note": "삽입곡 07 · 라이브로 대체 (음원 없음)"},
- {"q": "Q33", "act": "피날레 · 내 마음의 노래", "trig": "제이·알레그로 외 퇴장", "what": "카덴차 목소리 (멀리서, 리버브)", "kind": "보이스", "len": "8s", "loop": false, "fi": 2, "fo": 3, "vol": "MF", "src": "사전 녹음", "term": "", "note": "김하정 녹음 + 리버브 롱테일 · 무대 뒤 스피커"},
+ {"q": "Q30", "act": "3막 · 내 안의 노래를 찾아서", "trig": "세 요정 축제 의상 등장", "what": "축제 타악", "kind": "스팅어", "len": "4s", "loop": false, "fi": 0, "fo": 2, "vol": "F", "src": "Q30_축제타악.mp3", "term": "crowd cheer festive celebration", "note": "연출메모: 배우들이 환호하며 등장 · GO하면 Q29 반짝임이 2초에 걸쳐 꺼짐", "stopFirst": ["Q29"], "stopFade": 2},
+ {"q": "Q33", "act": "피날레 · 내 마음의 노래", "trig": "제이·알레그로 외 퇴장", "what": "카덴차 목소리 (멀리서, 리버브)", "kind": "보이스", "len": "8s", "loop": false, "fi": 2, "fo": 3, "vol": "MF", "src": "⚠ 음원 없음 — 김하정 녹음 예정", "term": "", "note": "리버브 롱테일 · 무대 뒤 스피커"},
  {"q": "Q34", "act": "피날레 · 내 마음의 노래", "trig": "제이 무반주 후렴", "what": "무음 — 모든 큐 정지", "kind": "정지", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "—", "term": "", "note": "완전 무음 확보 — 가장 중요한 큐"},
  {"q": "Q35", "act": "피날레 · 내 마음의 노래", "trig": "관객 대답 후", "what": "Sing Sing Sing 주제곡", "kind": "음원", "len": "2:07", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q35_SingSingSing_주제곡.mp3", "term": "", "note": "삽입곡 08 · 전 출연진 + 관객"},
- {"q": "Q36", "act": "커튼콜", "trig": "커튼콜 시작 · 배우 인사 등장", "what": "터키 행진곡 (반복)", "kind": "음원", "len": "1:34 반복", "loop": true, "fi": 0, "fo": 3, "vol": "F", "src": "Q36_터키행진곡_커튼콜_반복용.mp3", "term": "", "note": "인사가 끝나면 이 줄의 정지(3초 페이드) → Q37"},
+ {"q": "Q36", "act": "커튼콜", "trig": "커튼콜 시작 · 배우 인사 등장", "what": "터키 행진곡 (반복)", "kind": "음원", "len": "1:34 반복", "loop": true, "fi": 0, "fo": 3, "vol": "F", "src": "Q36_터키행진곡_커튼콜_반복용.mp3", "term": "", "note": "인사가 끝나면 이 줄의 정지(3초 페이드) → Q37", "stopFirst": ["Q35"], "stopFade": 3},
  {"q": "Q37", "act": "커튼콜", "trig": "인사 후 (Q36 페이드아웃 직후)", "what": "Sing Sing Sing 주제곡", "kind": "음원", "len": "2:07", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q37_SingSingSing_주제곡_인사후.mp3", "term": "", "note": "Q36이 아직 재생 중이면 GO 시 3초 페이드로 자동 정리", "stopFirst": ["Q36"]},
 ];
 
@@ -255,8 +255,7 @@ function srcFromFile(file){
   return new Promise(res => {
     const mime = AUDIO_MIME(file.name);
     const blob = (file.type && file.type.startsWith('audio')) ? file : new Blob([file], {type:mime});
-    // blob URL을 우선 사용 — data URL은 일부 브라우저에서 중간 위치로 이동(탐색)이 되지 않는다
-    if (true || file.size > DATA_LIMIT){ res({kind:'blob', url:URL.createObjectURL(blob)}); return; }
+    if (file.size > DATA_LIMIT){ res({kind:'blob', url:URL.createObjectURL(blob)}); return; }
     const r = new FileReader();
     r.onload = () => res({kind:'data', url:r.result});
     r.onerror = () => res({kind:'blob', url:URL.createObjectURL(blob)});
@@ -332,6 +331,30 @@ function addFile(i, file){
 }
 
 function addURL(i, url, name){ state[i].layers.push(makeLayer(i, url, name, null, 'url')); }
+// 링크 음원: 이미 이 브라우저에 저장돼 있으면 건너뛰고, 아니면 통째로 받아 저장한다 (다음부터 오프라인 재생)
+const _remote = {};
+let _dl = {n:0, done:0};
+async function addRemote(i, url, name){
+  const s = state[i];
+  if (s.layers.some(L => L.name === name)) return true;          // 저장분으로 이미 들어옴
+  _dl.n++; dlBadge();
+  try{
+    if (!_remote[url]){
+      _remote[url] = fetch(url, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+        .then(b => new File([b], name, {type: b.type && b.type.startsWith('audio') ? b.type : AUDIO_MIME(name)}));
+    }
+    const f = await _remote[url];
+    addFile(i, f);                                                 // addFile → persist() 로 저장
+    return true;
+  }catch(e){
+    addURL(i, url, name);                                          // 받기 실패 시 스트리밍으로라도 연결
+    return true;
+  }finally{ _dl.done++; dlBadge(); }
+}
+function dlBadge(){
+  const b = document.getElementById('badge'); if (!b) return;
+  if (_dl.done < _dl.n){ b.hidden = false; b.className = 'badge net'; b.textContent = '음원 받는 중 ' + _dl.done + ' / ' + _dl.n; }
+}
 
 function removeLayer(i, k){
   const s = state[i], L = s.layers[k];
@@ -398,8 +421,28 @@ function render(){
     const meta = document.createElement('div');
     meta.className = 'meta';
     meta.innerHTML = c.len + (s.loopOn ? ' · <span class="on">반복 재생</span>' : '') +
-      '<br>페이드 ' + c.fi + 's / ' + c.fo + 's · ' + c.vol +
+      '<br>' + c.vol +
       (s.layers.length > 1 ? '<br><span class="on">' + s.layers.length + '겹 동시 재생</span>' : '');
+    const ff = fadeFields(c);
+    if (ff.length){
+      const fd = document.createElement('div'); fd.className = 'fades';
+      ff.forEach(([k, lab]) => {
+        const w = document.createElement('label');
+        const t = document.createElement('span'); t.textContent = lab;
+        const inp = document.createElement('input');
+        inp.type = 'number'; inp.min = 0; inp.max = 30; inp.step = 0.5;
+        inp.value = (c[k] != null ? c[k] : 0);
+        inp.title = lab + ' 시간 (초)';
+        inp.onchange = () => {
+          const v = Math.max(0, Math.min(30, parseFloat(inp.value) || 0));
+          c[k] = v; inp.value = v; saveFades(); inp.blur();
+        };
+        inp.onkeydown = e => { if (e.key === 'Enter' || e.key === 'Escape') inp.blur(); };
+        const u = document.createElement('span'); u.textContent = '초';
+        w.append(t, inp, u); fd.appendChild(w);
+      });
+      meta.appendChild(fd);
+    }
     if (s.layers.length){
       const sp = document.createElement('div'); sp.className = 'speed';
       const lb = document.createElement('span'); lb.textContent = '속도';
@@ -565,6 +608,39 @@ function updateStatus(){
     on.length ? '재생 중 <b>' + on.join(', ') + '</b>' : '재생 중 없음';
 }
 
+/* ── 페이드 시간 (콘솔에서 조정 · 이 브라우저에 저장) ───── */
+const FADE_KEYS = ['fi','fo','cutFade','stopFade'];
+const FADE0 = {};
+CUES.forEach(c => { FADE0[c.q] = {}; FADE_KEYS.forEach(k => { if (c[k] != null) FADE0[c.q][k] = c[k]; }); });
+function fadeFields(c){
+  const f = [];
+  if (c.kind === '컷') f.push(['cutFade','꺼짐']);
+  else if (c.kind === '덕킹' || c.kind === '복귀') f.push(['fi','줄이는 시간']);
+  else if (c.kind !== '정지'){ f.push(['fi','페이드 인']); f.push(['fo','페이드 아웃']); }
+  if (c.stopFirst && c.stopFirst.length) f.push(['stopFade', c.stopFirst.join('·') + ' 정리']);
+  return f;
+}
+async function saveFades(){
+  const o = {};
+  CUES.forEach(c => { FADE_KEYS.forEach(k => {
+    if (c[k] != null && c[k] !== FADE0[c.q][k]) (o[c.q] = o[c.q] || {})[k] = c[k];
+  }); });
+  try{ await IDB.set('fades', o); flash('페이드 저장됨'); }catch(e){}
+}
+async function restoreFades(){
+  let o; try{ o = await IDB.get('fades'); }catch(e){ return; }
+  if (!o) return;
+  for (const [q, v] of Object.entries(o)){
+    const c = CUES.find(x => x.q === q); if (!c) continue;
+    FADE_KEYS.forEach(k => { if (v[k] != null) c[k] = v[k]; });
+  }
+}
+function resetFades(){
+  if (!confirm('모든 큐의 페이드 시간을 처음 값으로 되돌릴까요?')) return;
+  CUES.forEach(c => FADE_KEYS.forEach(k => { if (FADE0[c.q][k] != null) c[k] = FADE0[c.q][k]; }));
+  saveFades(); render();
+}
+
 /* ── 재생 위치 ─────────────────────────────────────────── */
 function spanOf(s){
   const L = s.layers.find(x => x.audio);
@@ -629,6 +705,7 @@ document.getElementById('pickFolder').onclick = () => {
   inp.onchange = () => bulkAssign(inp.files);
   inp.click();
 };
+document.getElementById('fadeReset').onclick = resetFades;
 document.getElementById('clearAll').onclick = async () => {
   if (!confirm('이 브라우저에 저장된 음원과 설정을 모두 지웁니다. 계속할까요?')) return;
   state.forEach((s, i) => { while (s.layers.length) removeLayer(i, 0); });
@@ -657,7 +734,7 @@ function fire(i){
       if (!L.audio) return;
       const to = (c.duckMul != null) ? level(t.cue.vol) * L.gain * c.duckMul
                                      : level(c.duckTo || 'PP') * L.gain;
-      ramp(L.audio, L.audio.volume, to, c.fi || 2);
+      ramp(L.audio, L.audio.volume, to, c.fi != null ? c.fi : 2);
     });
     return;
   }
@@ -670,10 +747,10 @@ function fire(i){
   }
   if (c.kind === '복귀' && c.target){
     const t = state[findCue(c.target)];
-    if (t && t.playing) t.layers.forEach(L => { if (L.audio) ramp(L.audio, L.audio.volume, level(t.cue.vol) * L.gain, c.fi || 3); });
+    if (t && t.playing) t.layers.forEach(L => { if (L.audio) ramp(L.audio, L.audio.volume, level(t.cue.vol) * L.gain, c.fi != null ? c.fi : 3); });
     return;
   }
-  (c.stopFirst || []).forEach(q => { const j = findCue(q); if (j >= 0) stop(j, false, 3); });
+  (c.stopFirst || []).forEach(q => { const j = findCue(q); if (j >= 0) stop(j, false, c.stopFade != null ? c.stopFade : 3); });
   const live = s.layers.filter(L => L.audio);
   if (!live.length) return;
   const startOff = s.startAt || 0;
@@ -880,9 +957,9 @@ async function autoLoadFromServer(){
       for (const [q, val] of Object.entries(map)){
         const i = state.findIndex(s => s.cue.q === q);
         if (i < 0) continue;
-        (Array.isArray(val) ? val : [val]).forEach(path => {
-          addURL(i, path, path.split('/').pop()); found++;
-        });
+        for (const path of (Array.isArray(val) ? val : [val])){
+          if (await addRemote(i, path, decodeURIComponent(path.split('/').pop()))) found++;
+        }
       }
       return found;
     }
@@ -900,7 +977,7 @@ async function autoLoadFromServer(){
       const base = s.cue.q + sfx;
       if (ctx){
         const url = ctx.dir + base + ctx.ext;
-        if (await exists(url)){ addURL(i, url, base + ctx.ext); found++; }
+        if (await exists(url)){ if (await addRemote(i, url, base + ctx.ext)) found++; }
         continue;
       }
       let hit = false;
@@ -908,7 +985,7 @@ async function autoLoadFromServer(){
         for (const ext of EXTS){
           const url = dir + base + '.' + ext;
           if (await exists(url)){
-            addURL(i, url, base + '.' + ext); found++;
+            if (await addRemote(i, url, base + '.' + ext)) found++;
             ctx = {dir, ext:'.' + ext}; hit = true; break;
           }
         }
@@ -1064,6 +1141,10 @@ const HINT_BASE =
   '음원은 큐시트 음량 단계에 맞춰 미리 레벨을 맞춰 두었습니다.';
 
 async function boot(){
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+    try{ navigator.serviceWorker.register('sw.js'); }catch(e){}
+  }
+  await restoreFades();
   render();
 
   if (window.__EMBED){
@@ -1089,8 +1170,8 @@ async function boot(){
     render(); return;
   }
 
-  const net = await autoLoadFromServer();          // ① 링크에 올려둔 음원
-  const saved = await restoreFiles();              // ② 이 브라우저에 저장해둔 음원
+  const saved = await restoreFiles();              // ① 이 브라우저에 저장해둔 음원 (인터넷 없어도 됨)
+  const net = await autoLoadFromServer();          // ② 링크에 올려둔 음원 중 아직 없는 것만 받아서 저장
   let mixed = 0;
   if (/^https?:$/.test(location.protocol)){        // ③ 공유 설정
     try{

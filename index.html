@@ -251,20 +251,18 @@ const AUDIO_MIME = n => {
 };
 const DATA_LIMIT = 18 * 1024 * 1024;   // 이보다 크면 data URL이 실패하므로 blob 우선
 
-function srcFromFile(file){
-  return new Promise(res => {
-    const mime = AUDIO_MIME(file.name);
-    const blob = (file.type && file.type.startsWith('audio')) ? file : new Blob([file], {type:mime});
-    if (file.size > DATA_LIMIT){ res({kind:'blob', url:URL.createObjectURL(blob)}); return; }
-    const r = new FileReader();
-    r.onload = () => res({kind:'data', url:r.result});
-    r.onerror = () => res({kind:'blob', url:URL.createObjectURL(blob)});
-    r.readAsDataURL(blob);
-  });
+// 사파리는 IndexedDB에서 꺼낸 Blob이나 큰 data URL을 오디오로 못 여는 경우가 있어,
+// 항상 메모리에 복사한 새 Blob으로 blob URL을 만든다 (중간부터 재생도 이 방식이어야 된다)
+async function srcFromFile(file){
+  const mime = (file.type && file.type.startsWith('audio')) ? file.type : AUDIO_MIME(file.name);
+  let blob;
+  try{ blob = new Blob([await file.arrayBuffer()], {type:mime}); }
+  catch(e){ blob = new Blob([file], {type:mime}); }
+  return {kind:'blob', url:URL.createObjectURL(blob)};
 }
 
 function makeLayer(i, url, name, file, kind){
-  const L = {name, url, file:file||null, gain:1, err:null,
+  const L = {name, url, file:file||null, remote:(file && file._remote) || null, gain:1, err:null,
              tried:{[kind || 'url']:true}, inPt:0, outPt:null, dur:0, trim:false};
   const a = new Audio();
   a.playsInline = true; a.preload = 'auto'; a.loop = false;
@@ -307,6 +305,10 @@ function retry(L, a){
     r.onerror = () => { L.err = '파일을 읽지 못했습니다'; render(); };
     r.readAsDataURL(blob); return;
   }
+  if (L.remote && !L.tried.remote){                     // 마지막으로 원래 링크에서 바로 재생
+    L.tried.remote = true; L.err = '링크에서 다시 불러오는 중…'; render();
+    a.src = L.remote; a.load(); return;
+  }
   const code = a.error ? a.error.code : 0;
   L.err = code === 4 ? '브라우저가 열지 못하는 형식입니다 (mp3 권장)' : '재생할 수 없는 음원입니다';
   render();
@@ -345,7 +347,7 @@ async function addRemote(i, url, name){
         for (const u of urlVariants(url)){
           try{
             const r = await fetch(u, {cache:'no-cache'});
-            if (r.ok){ const b = await r.blob(); return new File([b], name, {type: b.type && b.type.startsWith('audio') ? b.type : AUDIO_MIME(name)}); }
+            if (r.ok){ const b = await r.blob(); const f = new File([b], name, {type: b.type && b.type.startsWith('audio') ? b.type : AUDIO_MIME(name)}); f._remote = u; return f; }
             last = r.status;
           }catch(e){ last = e.message; }
         }
@@ -884,7 +886,7 @@ async function doPersist(){
           await IDB.set(L.key, L.file);
         }
         layers.push({name:L.name, gain:L.gain, inPt:L.inPt, outPt:L.outPt,
-                     key:L.key || null, url:L.file ? null : L.url});
+                     key:L.key || null, url:L.file ? null : L.url, remote:L.remote || null});
       }
       if (layers.length || s.rate !== 1 || s.loopOn !== !!s.cue.loop)
         meta[s.cue.q] = {rate:s.rate, loopOn:s.loopOn, layers};
@@ -921,6 +923,7 @@ async function restoreFiles(){
       let f = null;
       try{ f = await IDB.get(li.key); }catch(e){}
       if (!f) continue;
+      if (li.remote) try{ f._remote = li.remote; }catch(e){}
       const r = await srcFromFile(f);
       const L = makeLayer(i, r.url, li.name, f, r.kind);
       L.key = li.key;

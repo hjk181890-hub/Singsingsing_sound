@@ -340,8 +340,17 @@ async function addRemote(i, url, name){
   _dl.n++; dlBadge();
   try{
     if (!_remote[url]){
-      _remote[url] = fetch(url, {cache:'no-cache'}).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
-        .then(b => new File([b], name, {type: b.type && b.type.startsWith('audio') ? b.type : AUDIO_MIME(name)}));
+      _remote[url] = (async () => {
+        let last = '';
+        for (const u of urlVariants(url)){
+          try{
+            const r = await fetch(u, {cache:'no-cache'});
+            if (r.ok){ const b = await r.blob(); return new File([b], name, {type: b.type && b.type.startsWith('audio') ? b.type : AUDIO_MIME(name)}); }
+            last = r.status;
+          }catch(e){ last = e.message; }
+        }
+        throw new Error(last);
+      })();
     }
     const f = await _remote[url];
     addFile(i, f);                                                 // addFile → persist() 로 저장
@@ -350,6 +359,17 @@ async function addRemote(i, url, name){
     addURL(i, url, name);                                          // 받기 실패 시 스트리밍으로라도 연결
     return true;
   }finally{ _dl.done++; dlBadge(); }
+}
+// 맥에서 올린 한글 파일명은 자모가 분리된(NFD) 이름으로 저장되는 경우가 있어 두 형태와 폴더 위치를 모두 시도한다
+function urlVariants(url){
+  const k = url.lastIndexOf('/');
+  const dir = url.slice(0, k + 1);
+  let nm = url.slice(k + 1); try{ nm = decodeURIComponent(nm); }catch(e){}
+  const names = [...new Set([nm, nm.normalize('NFC'), nm.normalize('NFD')])];
+  const dirs = [...new Set([dir, '', 'audio/'])];
+  const out = [];
+  dirs.forEach(d => names.forEach(n => out.push(d + encodeURIComponent(n))));
+  return [...new Set([url, ...out])];
 }
 function dlBadge(){
   const b = document.getElementById('badge'); if (!b) return;

@@ -238,6 +238,49 @@ const state = CUES.map(c => ({cue:c, layers:[], playing:false, loopOn:!!c.loop, 
 let standing = 0;
 
 /* ── 레이어 관리 ───────────────────────────────────────── */
+/* 오디오 열기·닫기 */
+function arm(L){
+  if (!L.audio || L.armed || L.dead) return;
+  L.armed = true; L.audio.src = L.src; L.audio.load();
+}
+function disarm(L){
+  if (!L.audio || !L.armed || !L.audio.paused || L.fading) return;
+  L.armed = false;
+  try{ L.audio.removeAttribute('src'); L.audio.load(); }catch(e){}
+}
+const WARM_AHEAD = 3;
+function warm(){
+  const keep = new Set();
+  state.forEach((s, i) => { if (s.playing || s.layers.some(L => L.audio && (!L.audio.paused || L.fading))) keep.add(i); });
+  let n = 0;
+  for (let i = standing; i < state.length && n < WARM_AHEAD; i++){
+    if (state[i].layers.some(L => L.audio)){ keep.add(i); n++; }
+  }
+  if (typeof EDIT_Q !== 'undefined') state.forEach((s, i) => { if (s.cue.q === EDIT_Q) keep.add(i); });
+  state.forEach((s, i) => s.layers.forEach(L => keep.has(i) ? arm(L) : disarm(L)));
+}
+// 길이만 한 번씩 순서대로 읽고 바로 닫는다
+const _probeQ = []; let _probing = false;
+function probeDur(L){ _probeQ.push(L); if (!_probing) nextProbe(); }
+function nextProbe(){
+  const L = _probeQ.shift();
+  if (!L){ _probing = false; return; }
+  _probing = true;
+  if (L.dur || L.armed){ nextProbe(); return; }
+  const p = new Audio(); p.preload = 'metadata';
+  let done = false;
+  const fin = ok => {
+    if (done) return; done = true;
+    if (ok && p.duration && isFinite(p.duration)){ L.dur = p.duration; render(); }
+    try{ p.removeAttribute('src'); p.load(); }catch(e){}
+    setTimeout(nextProbe, 30);
+  };
+  p.onloadedmetadata = () => fin(true);
+  p.onerror = () => fin(false);
+  setTimeout(() => fin(false), 6000);
+  p.src = L.src; p.load();
+}
+
 function fmt(s){
   if (!isFinite(s)) return '0:00';
   const m = Math.floor(s / 60), x = Math.floor(s % 60);
@@ -280,9 +323,11 @@ function makeLayer(i, url, name, file, kind){
     if (s.loopOn){ try{ a.currentTime = L.inPt; a.play(); }catch(e){} }
     else { s.playing = s.layers.some(x => x.audio && !x.audio.paused); render(); }
   };
-  a.onerror = () => retry(L, a);
-  a.src = url; a.load();
+  a.onerror = () => { if (L.armed) retry(L, a); };
+  a.preload = 'auto';
+  L.src = url; L.armed = false;
   L.audio = a;
+  probeDur(L);
   return L;
 }
 
@@ -296,18 +341,18 @@ function retry(L, a){
   const blob = (L.file.type && L.file.type.startsWith('audio')) ? L.file : new Blob([L.file], {type:mime});
   if (!L.tried.blob){
     L.tried.blob = true; L.err = '다시 불러오는 중…'; render();
-    a.src = URL.createObjectURL(blob); a.load(); return;
+    L.src = URL.createObjectURL(blob); a.src = L.src; a.load(); return;
   }
   if (!L.tried.data && L.file.size <= DATA_LIMIT){
     L.tried.data = true; L.err = '다시 불러오는 중…'; render();
     const r = new FileReader();
-    r.onload = () => { a.src = r.result; a.load(); };
+    r.onload = () => { L.src = r.result; a.src = L.src; a.load(); };
     r.onerror = () => { L.err = '파일을 읽지 못했습니다'; render(); };
     r.readAsDataURL(blob); return;
   }
   if (L.remote && !L.tried.remote){                     // 마지막으로 원래 링크에서 바로 재생
     L.tried.remote = true; L.err = '링크에서 다시 불러오는 중…'; render();
-    a.src = L.remote; a.load(); return;
+    L.src = L.remote; a.src = L.src; a.load(); return;
   }
   const code = a.error ? a.error.code : 0;
   L.err = code === 4 ? '브라우저가 열지 못하는 형식입니다 (mp3 권장)' : '재생할 수 없는 음원입니다';
@@ -394,6 +439,7 @@ const list = document.getElementById('list');
 const kindClass = k => ({"베드":"k-bed","스팅어":"k-sting","라이브":"k-live","보이스":"k-voice","음원":"k-track"}[k] || "k-none");
 
 function render(){
+  try{ warm(); }catch(e){}
   list.innerHTML = '';
   let lastAct = null;
   state.forEach((s, i) => {
@@ -780,7 +826,12 @@ function fire(i){
   live.forEach(L => {
     const target = level(c.vol) * L.gain;
     const b = (L.outPt != null) ? L.outPt : (L.dur || Infinity);
-    try{ L.audio.currentTime = Math.min((L.inPt || 0) + startOff, b - 0.05); }catch(e){}
+    const pos = Math.min((L.inPt || 0) + startOff, b - 0.05);
+    if (!L.armed){
+      arm(L);
+      if (pos > 0) L.audio.addEventListener('loadedmetadata', () => { try{ L.audio.currentTime = pos; }catch(e){} }, {once:true});
+    }
+    else { try{ L.audio.currentTime = pos; }catch(e){} }
     L.audio.loop = false;
     try{ L.audio.playbackRate = s.rate; if ('preservesPitch' in L.audio) L.audio.preservesPitch = true; }catch(e){}
     try{ L.audio.volume = c.fi > 0 ? 0 : target; }catch(e){}
@@ -804,7 +855,9 @@ function stop(i, hard, secOverride){
   s.playing = false;
   s.layers.forEach(L => {
     if (!L.audio) return;
+    L.fading = true;
     ramp(L.audio, L.audio.volume, 0, fo, () => {
+      L.fading = false;
       try{ L.audio.pause(); L.audio.currentTime = L.inPt || 0; }catch(e){}
       render();
     });

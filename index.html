@@ -194,30 +194,25 @@ const CUES = [
  {"q": "Q2", "act": "프롤로그", "trig": "알레그로 대사 시작", "what": "Q1 볼륨 30% 다운", "kind": "덕킹", "len": "—", "loop": false, "fi": 2, "fo": 0, "vol": "MP", "src": "Q1 제어", "term": "", "note": "끊지 않고 볼륨만 30% 내림", "target": "Q1", "duckMul": 0.7},
  {"q": "Q3", "act": "프롤로그", "trig": "“한 가지 고민이 있었지.”", "what": "Q1 즉시 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q1 제어", "term": "", "note": "페이드 없이 정박에 딱 정지", "target": "Q1"},
  {"q": "Q6", "act": "1막 · 음악이 사라진 마을", "trig": "스크린 회색 마을", "what": "차가운 앰비언스 (주제곡 마이너는 피아노 라이브)", "kind": "베드", "len": "5분+", "loop": true, "fi": 3, "fo": 3, "vol": "PP", "src": "Q06_차가운앰비언스_5분루프.mp3", "term": "cold empty ambience drone", "note": "스크린 자막과 동시에 피아노가 주제곡 마이너로 연주 · 이 큐는 차가운 바람 소리만 · Q7에서 자동 페이드아웃"},
- {"q": "Q7", "act": "1막 · 음악이 사라진 마을", "trig": "라이브 연주 Off · 신디 3음 시작과 동시", "what": "Q6 바람 소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q6 제어", "term": "", "note": "3초에 걸쳐 꺼짐 (이후 신디·차임벨은 라이브)", "targets": ["Q6"], "cutFade": 3},
+ {"q": "Q7", "act": "1막 · 음악이 사라진 마을", "trig": "신디 3음이 끝난 뒤", "what": "Q6 바람 소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q6 제어", "term": "", "note": "3초에 걸쳐 꺼짐 (신디·차임벨은 라이브)", "targets": ["Q6"], "cutFade": 3},
  {"q": "Q9", "act": "1막 · 음악이 사라진 마을", "trig": "“오페라…랜드요?”", "what": "Voi che sapete 전주", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q09_VoiCheSapete_MR.mp3", "term": "", "note": "삽입곡 01 · MR · 전주는 알레그로 대사 밑으로 진행", "stopFirst": ["Q6"], "stopFade": 3},
  {"q": "Q10", "act": "1막 · 음악이 사라진 마을", "trig": "“음악에는 멜로디만 있는 게 아니거든.” 직후", "what": "북소리·발 구르는 리듬", "kind": "베드", "len": "8s", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Q10_북발구르기_2분루프.mp3", "term": "marching drum stomp rhythm", "note": "템포 등장 · 박자 정확한 루프 · Q11에서 자동 페이드아웃"},
- {"q": "Q11", "act": "1막 · 음악이 사라진 마을", "trig": "Non più andrai 피아노 시작과 동시", "what": "Q10 북소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q10 제어", "term": "", "note": "2초에 걸쳐 꺼짐 (노래는 피아노 라이브)", "targets": ["Q10"], "cutFade": 2},
- {"q": "Q13", "act": "1막 · 음악이 사라진 마을", "trig": "암전 · 템포 퇴장", "what": "물 흐르는 소리", "kind": "베드", "len": "8분+", "loop": true, "fi": 4, "fo": 4, "vol": "MP", "src": "Q13_물흐르는소리_8분루프.mp3", "term": "", "note": "2막 대사 전체 밑에 깔림 · 하프 아르페지오 삭제 · 가장 긴 큐"},
- {"q": "Q15A", "act": "2막 · 오페라랜드의 여행", "trig": "안단테, 노래 준비 자세", "what": "Q13 강물소리 낮추기", "kind": "덕킹", "len": "—", "loop": false, "fi": 4, "fo": 0, "vol": "PP", "src": "Q13 제어", "term": "", "note": "물소리는 끊지 않고 볼륨만 35%로 내림 · 4초", "target": "Q13", "duckMul": 0.35},
- {"q": "Q16", "act": "2막 · 오페라랜드의 여행", "trig": "“바람을 따라 흘러가도록 두는 거야.”", "what": "Habanera", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q16_Habanera_MR.mp3", "term": "", "note": "삽입곡 03 · MR · 강물소리 밑에 깔린 채 진행"},
- {"q": "Q16B", "act": "2막 · 오페라랜드의 여행", "trig": "템포 객석에서 등장", "what": "강물소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 2, "vol": "—", "src": "Q13 제어", "term": "", "note": "2초 페이드로 강물소리 정리", "targets": ["Q13"], "cutFade": 2},
- {"q": "Q17", "act": "2막 · 오페라랜드의 여행", "trig": "템포 등장 직후", "what": "탬버린·캐스터네츠 리듬", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 2, "vol": "MF", "src": "Q17_탬버린캐스터네츠_2분루프.mp3", "term": "tambourine castanet rhythm", "note": "강물소리가 멈춘 뒤 들어감 · Q18에서 자동 페이드아웃"},
- {"q": "Q18", "act": "2막 · 오페라랜드의 여행", "trig": "“심장이 뛰어야 진짜 노래지!”", "what": "두근×3 심장소리 (보통 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q18_심장소리_두근x3.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작", "stopFirst": ["Q17"], "stopFade": 2},
- {"q": "Q19", "act": "2막 · 오페라랜드의 여행", "trig": "“손가락이 튕겨지고 싶지 않았냐고!”", "what": "두근×6 심장소리 (Q18의 2배 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q19_빠른심장소리_두근x6.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
- {"q": "Q20", "act": "2막 · 오페라랜드의 여행", "trig": "“쿵 짝짝 쿵 짝짝”", "what": "왈츠 리듬 타악기 (박수 유도)", "kind": "베드", "len": "2분", "loop": true, "fi": 0, "fo": 0, "vol": "MF", "src": "Q20_왈츠리듬_박수유도_2분루프.mp3", "term": "waltz percussion clap rhythm", "note": "쿵 짝 짝 · 140BPM 3/4 = La donna è mobile 템포 · Q21에서 자동 정지"},
- {"q": "Q21", "act": "2막 · 오페라랜드의 여행", "trig": "“자 들어봐 안단테”", "what": "La donna è mobile", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q21_LaDonnaEMobile_MR_앞3초컷.mp3", "term": "", "note": "삽입곡 04 · MR · 앞 3초 잘라 바로 나옴", "stopFirst": ["Q20", "Q17"], "stopFade": 0.5},
- {"q": "Q22", "act": "2막 · 오페라랜드의 여행", "trig": "전 조명 소등 · 푸른빛 1등", "what": "저음 파이프오르간·베이스 드론", "kind": "베드", "len": "6분+", "loop": true, "fi": 3, "fo": 4, "vol": "MP", "src": "Q22_오르간드론_6분루프.mp3", "term": "pipe organ low drone ominous", "note": "카덴차 등장~퇴장 전체 · Q26에서 자동 페이드아웃"},
- {"q": "Q23", "act": "2막 · 오페라랜드의 여행", "trig": "카덴차 첫 대사 직전", "what": "천둥번개", "kind": "스팅어", "len": "5s", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q23_천둥.mp3", "term": "thunder crack rumble", "note": "스크린 회오리 영상과 동시"},
+ {"q": "Q11", "act": "1막 · 음악이 사라진 마을", "trig": "알레그로 “아! 시끄러워! 왔구나, 템포.” 직후", "what": "Q10 북소리 작게", "kind": "덕킹", "len": "—", "loop": false, "fi": 2, "fo": 0, "vol": "—", "src": "Q10 제어", "term": "", "note": "북소리는 끊지 않고 2초에 걸쳐 35%로 낮춤 · Q11B에서 정지", "target": "Q10", "duckMul": 0.35},
+ {"q": "Q11B", "act": "1막 · 음악이 사라진 마을", "trig": "제이 “네! 저도 해볼래요!” 직후", "what": "Q10 북소리 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q10 제어", "term": "", "note": "2초에 걸쳐 꺼짐 → Non più andrai (피아노 라이브)", "targets": ["Q10"], "cutFade": 2},
+ {"q": "Q13", "act": "1막 · 음악이 사라진 마을", "trig": "암전 · 템포 퇴장", "what": "물 흐르는 소리", "kind": "베드", "len": "8분+", "loop": true, "fi": 4, "fo": 4, "vol": "70%", "src": "Q13_물흐르는소리_8분루프.mp3", "term": "", "note": "2막 내내 깔림 · 볼륨 70% · Q15A에서 작게 · Q22에서 자동 페이드아웃"},
+ {"q": "Q15A", "act": "2막 · 오페라랜드의 여행", "trig": "안단테, 노래 준비 자세", "what": "Q13 강물소리 낮추기", "kind": "덕킹", "len": "—", "loop": false, "fi": 4, "fo": 0, "vol": "PP", "src": "Q13 제어", "term": "", "note": "물소리는 끊지 않고 볼륨만 35%로 내림 · 4초 · 이후 Q22까지 계속 흐름", "target": "Q13", "duckMul": 0.35},
+ {"q": "Q16", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “…강물처럼…” 직후 · “바람을 따라 흘러가도록”과 동시에", "what": "Habanera", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q16_Habanera_MR.mp3", "term": "", "note": "삽입곡 03 · MR · 강물소리는 계속 깔린 채 진행"},
+ {"q": "Q18", "act": "2막 · 오페라랜드의 여행", "trig": "“심장이 뛰어야 진짜 노래지!”", "what": "두근×3 심장소리 (보통 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q18_심장소리_두근x3.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
+ {"q": "Q19", "act": "2막 · 오페라랜드의 여행", "trig": "“손가락이 튕겨지고 싶지 않았냐고!”", "what": "두근×6 심장소리 (1.1배 빠르기)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q19_빠른심장소리_두근x6_1.1배.mp3", "term": "", "note": "원샷 · 지체 없이 바로 시작"},
+ {"q": "Q21", "act": "2막 · 오페라랜드의 여행", "trig": "“자 들어봐 안단테”", "what": "La donna è mobile", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q21_LaDonnaEMobile_MR.mp3", "term": "", "note": "삽입곡 04 · MR · 반 마디 픽업부터 바로 시작"},
+ {"q": "Q22", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “…중요한 게 하나 더 있어.” 직후", "what": "물소리 → 저음 파이프오르간·베이스 드론", "kind": "베드", "len": "6분+", "loop": true, "fi": 3, "fo": 4, "vol": "MP", "src": "Q22_오르간드론_6분루프.mp3", "term": "pipe organ low drone ominous", "note": "GO하면 Q13 물소리가 3초에 걸쳐 꺼지고 드론으로 전환 · Q26에서 페이드아웃", "stopFirst": ["Q13"], "stopFade": 3},
+ {"q": "Q23", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “…심판자이자 수호자이신 분.” 직후", "what": "천둥번개", "kind": "스팅어", "len": "5s", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q23_천둥.mp3", "term": "thunder crack rumble", "note": "스크린 회오리 영상과 동시"},
  {"q": "Q24", "act": "2막 · 오페라랜드의 여행", "trig": "안단테 “쉿! 조용히 해!”", "what": "천둥번개 2회", "kind": "스팅어", "len": "7s", "loop": false, "fi": 0, "fo": 1, "vol": "MF", "src": "Q24_천둥번개_2회.mp3", "term": "thunder crack rumble", "note": "1회차 뒤 3.3초에 2회차"},
- {"q": "Q25", "act": "2막 · 오페라랜드의 여행", "trig": "“이것이 바로 음악이 가진 진정한 무게다!”", "what": "Nessun dorma", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q25_NessunDorma_MR_앞2초컷.mp3", "term": "", "note": "삽입곡 05 · MR · 앞 2초 잘라 바로 나옴"},
- {"q": "Q27A", "act": "2막 · 오페라랜드의 여행", "trig": "“지금도 계속 뛰고 있어요” 직후", "what": "두근×2 심장소리 (약간 느리게)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q27A_심장소리_두근x2_느리게.mp3", "term": "", "note": "원샷 · 지체 없이 · 2막 끝 · 템포 대사 직후, 암전 전"},
- {"q": "Q26", "act": "2막 · 오페라랜드의 여행", "trig": "템포·안단테·알레그로 퇴장", "what": "암전 전환음", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 2, "vol": "MP", "src": "Q26_암전전환음.mp3", "term": "dark transition swell", "note": "3초 원샷 · GO하면 Q22 오르간 드론이 4초에 걸쳐 같이 꺼짐", "stopFirst": ["Q22"], "stopFade": 4},
- {"q": "Q27", "act": "3막 · 내 안의 노래를 찾아서", "trig": "제이 무대 중앙 · 따뜻한 핀조명", "what": "스트링 스웰 (따뜻하게)", "kind": "베드", "len": "4분", "loop": true, "fi": 4, "fo": 3, "vol": "PP", "src": "Q27_스트링스웰_3분루프.mp3", "term": "warm strings ambient pad", "note": "조명 전환과 동시 · Q28에서 자동 페이드아웃"},
+ {"q": "Q25", "act": "2막 · 오페라랜드의 여행", "trig": "“이것이 바로 음악이 가진 진정한 무게다!”", "what": "Nessun dorma", "kind": "음원", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q25_NessunDorma_MR.mp3", "term": "", "note": "삽입곡 05 · MR · 앞 무음만 제거, 전주 처음부터"},
+ {"q": "Q27A", "act": "2막 · 오페라랜드의 여행", "trig": "제이 “…지금도 계속 뛰고 있어요!” 직후", "what": "두근×3 심장소리 (약간 느리게)", "kind": "스팅어", "len": "3s", "loop": false, "fi": 0, "fo": 0, "vol": "MF", "src": "Q27A_심장소리_두근x3_느리게.mp3", "term": "", "note": "원샷 · 지체 없이 · 2막 끝 · 템포 대사 직후, 암전 전"},
+ {"q": "Q26", "act": "2막 · 오페라랜드의 여행", "trig": "암전 후", "what": "Q22 오르간 드론 페이드아웃", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q22 제어", "term": "dark transition swell", "note": "전환음 없이 4초에 걸쳐 꺼짐", "targets": ["Q22"], "cutFade": 4},
+ {"q": "Q27", "act": "3막 · 내 안의 노래를 찾아서", "trig": "3막 자막과 동시", "what": "스트링 스웰 (따뜻하게)", "kind": "베드", "len": "4분", "loop": true, "fi": 3, "fo": 3, "vol": "MF", "src": "Q27_스트링스웰_3분루프_크게.mp3", "term": "warm strings ambient pad", "note": "이전보다 10dB 크게 · Q28에서 자동 페이드아웃"},
  {"q": "Q28", "act": "3막 · 내 안의 노래를 찾아서", "trig": "O mio babbino caro 피아노 시작과 동시", "what": "Q27 스트링 정지", "kind": "컷", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "Q27 제어", "term": "", "note": "3초에 걸쳐 꺼짐 (노래는 피아노 라이브)", "targets": ["Q27"], "cutFade": 3},
- {"q": "Q29", "act": "3막 · 내 안의 노래를 찾아서", "trig": "배경 스크린 — 불꽃이 별이 됨", "what": "반짝임 스파클 (긴 버전)", "kind": "베드", "len": "2분", "loop": true, "fi": 2, "fo": 2, "vol": "PP", "src": "Q29_반짝임_긴버전_2분루프.mp3", "term": "", "note": "영상 싱크 · 노래 밑 아주 작게"},
- {"q": "Q30", "act": "3막 · 내 안의 노래를 찾아서", "trig": "세 요정 축제 의상 등장", "what": "축제 타악", "kind": "스팅어", "len": "4s", "loop": false, "fi": 0, "fo": 2, "vol": "F", "src": "Q30_축제타악.mp3", "term": "crowd cheer festive celebration", "note": "연출메모: 배우들이 환호하며 등장 · GO하면 Q29 반짝임이 2초에 걸쳐 꺼짐", "stopFirst": ["Q29"], "stopFade": 2},
- {"q": "Q33", "act": "피날레 · 내 마음의 노래", "trig": "제이·알레그로 외 퇴장", "what": "카덴차 목소리 (멀리서, 리버브)", "kind": "보이스", "len": "8s", "loop": false, "fi": 2, "fo": 3, "vol": "MF", "src": "⚠ 음원 없음 — 김하정 녹음 예정", "term": "", "note": "리버브 롱테일 · 무대 뒤 스피커"},
  {"q": "Q34", "act": "피날레 · 내 마음의 노래", "trig": "제이 무반주 후렴", "what": "무음 — 모든 큐 정지", "kind": "정지", "len": "—", "loop": false, "fi": 0, "fo": 0, "vol": "—", "src": "—", "term": "", "note": "완전 무음 확보 — 가장 중요한 큐"},
  {"q": "Q35", "act": "피날레 · 내 마음의 노래", "trig": "관객 대답 후", "what": "Sing Sing Sing 주제곡", "kind": "음원", "len": "2:07", "loop": false, "fi": 0, "fo": 3, "vol": "F", "src": "Q35_SingSingSing_주제곡.mp3", "term": "", "note": "삽입곡 08 · 전 출연진 + 관객"},
  {"q": "Q36", "act": "커튼콜", "trig": "커튼콜 시작 · 배우 인사 등장", "what": "터키 행진곡 (반복)", "kind": "음원", "len": "1:34 반복", "loop": true, "fi": 0, "fo": 3, "vol": "F", "src": "Q36_터키행진곡_커튼콜_반복용.mp3", "term": "", "note": "인사가 끝나면 이 줄의 정지(3초 페이드) → Q37", "stopFirst": ["Q35"], "stopFade": 3},
@@ -225,7 +220,7 @@ const CUES = [
 ];
 
 // 음원은 큐시트 음량 단계(PP·MP·MF·F)에 맞춰 미리 레벨을 맞춰 두었으므로 콘솔에서는 추가로 줄이지 않는다
-const VOL = {PP:1, MP:1, MF:1, F:1, "—":1};
+const VOL = {PP:1, MP:1, MF:1, F:1, "—":1, "70%":0.7};
 let MASTER = 1;
 const level = v => Math.max(0, Math.min(1, (VOL[v] ?? 0.7) * MASTER));
 const REQ_FILE  = c => ["베드","스팅어","보이스","음원"].includes(c.kind);
@@ -970,6 +965,7 @@ async function restoreFiles(){
     const s = state[i];
     if (v.rate) s.rate = v.rate;
     if (v.loopOn != null) s.loopOn = v.loopOn;
+    if (!CAN_FILE(s.cue)) continue;                // 음원이 없는 큐(컷·덕킹)로 바뀐 자리의 옛 저장분은 버린다
     for (const li of (v.layers || [])){
       if (!li.key) continue;                    // 링크 음원은 매번 서버에서 새로 받는다
       if (s.layers.some(L => L.name === li.name)) continue;
@@ -1030,6 +1026,18 @@ async function autoLoadFromServer(){
     const r = await fetch('manifest.json', {cache:'no-store'});
     if (r.ok){
       const map = await r.json();
+      // 링크 목록에서 바뀐(이름이 달라진) 음원은 저장분에서 빼고 새 음원으로 교체
+      for (const [q, val] of Object.entries(map)){
+        const i = state.findIndex(s => s.cue.q === q);
+        if (i < 0) continue;
+        const want = new Set((Array.isArray(val) ? val : [val]).map(p => { let n = p.split('/').pop(); try{ n = decodeURIComponent(n); }catch(e){} return n.normalize('NFC'); }));
+        const s = state[i];
+        const keep = s.layers.filter(L => want.has((L.name || '').normalize('NFC')));
+        if (keep.length !== s.layers.length){
+          s.layers.filter(L => !keep.includes(L)).forEach(L => { try{ L.audio && L.audio.pause(); L.audio && L.audio.removeAttribute('src'); }catch(e){} });
+          s.layers = keep; persist();
+        }
+      }
       for (const [q, val] of Object.entries(map)){
         const i = state.findIndex(s => s.cue.q === q);
         if (i < 0) continue;

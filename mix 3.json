@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "savedAt": "2026-10-03T12:08:13.022Z",
+  "master": 1,
+  "cues": {
+    "Q0": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q00_주제곡_객석입장.mp3",
+          "gain": 0.2,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q1": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q00_주제곡_객석입장.mp3",
+          "gain": 0.3,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q6": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q06_차가운앰비언스_5분루프.mp3",
+          "gain": 0.8,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q7": {
+      "rate": 1,
+      "loop": true,
+      "layers": []
+    },
+    "Q9": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q09_VoiCheSapete_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q10": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q10_북발구르기_2분루프.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q11B": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q11B_NonPiuAndrai_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q13": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q13_물흐르는소리_8분루프.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q16": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q16_Habanera_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q18": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q18_심장소리_두근x3.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q19": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q19_빠른심장소리_두근x6_1.1배.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q21": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q21_LaDonnaEMobile_MR_전체.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q22": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q22_오르간드론_6분루프.mp3",
+          "gain": 0.8,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q23": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q23_천둥.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q24": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q24_천둥번개_2회.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q25": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q25_NessunDorma_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q27A": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q27A_심장소리_두근x3_느리게.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q27": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q27_스트링스웰_3분루프_크게.mp3",
+          "gain": 0.15,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q28": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q28_OMioBabbinoCaro_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q31": {
+      "rate": 0.9,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q31_Brindisi_MR.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q35": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q35_SingSingSing_주제곡.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q36": {
+      "rate": 1,
+      "loop": true,
+      "layers": [
+        {
+          "name": "Q36_터키행진곡_커튼콜_반복용.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    },
+    "Q37": {
+      "rate": 1,
+      "loop": false,
+      "layers": [
+        {
+          "name": "Q37_SingSingSing_주제곡_인사후.mp3",
+          "gain": 1,
+          "inPt": 0,
+          "outPt": null,
+          "url": null
+        }
+      ]
+    }
+  }
+}
